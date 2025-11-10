@@ -1,7 +1,7 @@
 import qs from 'qs';
 import rootAxios from 'axios';
 
-export const URLBASE = "https://book.anhtester.com"
+export const URLBASE = "/";
 
 // Biến để đồng bộ hóa làm mới token
 let isRefreshing = false;

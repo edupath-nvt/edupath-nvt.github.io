@@ -36,9 +36,7 @@ export default defineConfig({
     ],
   },
   build: {
-    outDir: 'dist',
-    emptyOutDir: true,
-    manifest: true,
+    outDir: '../',
   },
 
   server: {

@@ -8,6 +8,6 @@ export type ConfigValue = {
 };
 
 export const CONFIG: ConfigValue = {
-  appName: 'Book UI for api-book.anhtester.com',
+  appName: 'Edupath',
   appVersion: packageJson.version,
 };
