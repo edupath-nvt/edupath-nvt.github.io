@@ -43,13 +43,6 @@ export function CheckAuth({
   const { set } = useLayoutPadding();
 
   useEffect(() => {
-    // axios.get('/me').then((res) => {
-    //   setAuth(res.data);
-    //   setMode(res.data.config?.theme || 'system');
-    //   setPrimary(res.data.config?.mainColor || primary.main);
-    //   checkStatusBarStyle(res.data.config?.theme || 'system');
-    // });
-
     const flatform = Capacitor.getPlatform();
     if (flatform === 'android') {
       set(5, 2);

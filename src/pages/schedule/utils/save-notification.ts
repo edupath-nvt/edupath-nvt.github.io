@@ -17,17 +17,21 @@ export async function saveNotification(lst: Schedule[]) {
             const isSelf = s.type === 'self';
             const title = isSelf
                 ? t('Personal Schedule')
-                : t('Study Schedule: ${0}', s.subject);
+                : t('Study Schedule: ${0}', { 0: s.subject });
 
             const body = isSelf
                 ? t("Your personal activity starts at {0} ({1} hours)",
-                    dayjs(s.timeHandle).format("HH:mm, dddd"),
-                    s.studyTime)
+                    {
+                        0: dayjs(s.timeHandle).format("HH:mm, dddd"),
+                        1: s.studyTime
+                    })
                 : t("Start studying {0} ({1}) at {2} ({3} hours)",
-                    s.subject,
-                    s.exam,
-                    dayjs(s.timeHandle).format("HH:mm, dddd"),
-                    s.studyTime
+                    {
+                        0: s.subject,
+                        1: s.exam,
+                        2: dayjs(s.timeHandle).format("HH:mm, dddd"),
+                        3: s.studyTime
+                    }
                 );
 
             return {

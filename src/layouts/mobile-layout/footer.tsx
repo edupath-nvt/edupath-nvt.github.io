@@ -32,6 +32,7 @@ export function Footer() {
           <Tab
             sx={{
               height: (t) => t.spacing(10),
+              textWrap: 'nowrap',
               '&.Mui-selected': {
                 color: (t) => `${t.palette.primary.main} !important`,
                 fontWeight: 600,
