@@ -10,7 +10,7 @@
     "dev": "bun --bun vite",
     "start": "bun --bun vite preview",
     "build": "bun vite build",
-    "deploy": "gh-pages -d dist",
+    "deploy": "bun vite build && bunx gh-pages -d dist",
     "build:android": "bun vite build && bunx cap sync android",
     "build:ios": "bun vite build && bunx cap sync ios",
     "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
