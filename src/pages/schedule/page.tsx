@@ -59,7 +59,7 @@ export default function Page() {
           color="primary"
           onClick={() => {
             const today = dayjs();
-            form.setValue('day', today);
+            form.setValue('day', today.add(1, 'day'));
             form.setValue('time', today.hour(20).minute(0));
             setOpen(true);
           }}
