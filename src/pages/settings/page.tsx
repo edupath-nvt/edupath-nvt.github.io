@@ -25,7 +25,7 @@ const colorOpt = Object.entries(colors)
   })
   .flatMap(([, value]) =>
     Object.entries(value)
-      .filter(([shade]) => Number(shade) >= 300 && Number(shade) <= 900)
+      .filter(([shade]) => Number(shade) >= 300 && Number(shade) < 900)
       .map(([, color]) => color)
   );
 
@@ -80,7 +80,7 @@ export default function Page() {
           size={42}
           sx={{
             '& li': {
-              width: 1 / 7,
+              width: 1 / 6,
               display: 'flex',
               justifyContent: 'center',
             },
