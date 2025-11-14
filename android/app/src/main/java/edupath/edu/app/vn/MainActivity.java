@@ -1,4 +1,4 @@
-package book.anhtester.com;
+package edupath.edu.app.vn;
 
 import com.getcapacitor.BridgeActivity;
 
