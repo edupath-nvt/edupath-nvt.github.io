@@ -1,0 +1,1 @@
+import{f as o,e}from"./index-BpyyQ06z.js";function r(t){return e("MuiToggleButtonGroup",t)}const s=o("MuiToggleButtonGroup",["root","selected","horizontal","vertical","disabled","grouped","groupedHorizontal","groupedVertical","fullWidth","firstButton","lastButton","middleButton"]);export{r as g,s as t};
