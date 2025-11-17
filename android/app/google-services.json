@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "66651923636",
+    "project_id": "edupath-nvt-715cb",
+    "storage_bucket": "edupath-nvt-715cb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:66651923636:android:c413bcba012758e7e723e1",
+        "android_client_info": {
+          "package_name": "edupath.edu.app.vn"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "66651923636-e95qf5ofpis11sr9tqejf332rmlrlgnh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "edupath.edu.app.vn",
+            "certificate_hash": "e5b71d38d695edfba5f446c054343362e6a53eef"
+          }
+        },
+        {
+          "client_id": "66651923636-10jhlmic14fvivlvhiivkajvo7hdcit4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA9mMbrWlrbdT6Yo9MkTbmxq9zpQySoR88"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "66651923636-10jhlmic14fvivlvhiivkajvo7hdcit4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

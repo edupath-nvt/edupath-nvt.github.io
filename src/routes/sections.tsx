@@ -35,17 +35,9 @@ const routesSection: RouteObject[] = [
       },
       {
         path: '*',
-        Component: () => 'not found',
+        Component: lazy(() => import('src/pages/not-found-view/index')),
       },
     ],
-  },
-  {
-    path: 'sign-up',
-    Component: lazy(() => import('src/pages/user-mgt/sign-up')),
-  },
-  {
-    path: 'sign-in',
-    Component: lazy(() => import('src/pages/sign-in')),
   },
   { path: '*', Component: lazy(() => import('src/pages/not-found-view/index')) },
 ];

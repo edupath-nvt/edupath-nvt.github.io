@@ -1,23 +1,23 @@
 import type { IconButtonProps } from '@mui/material/IconButton';
 
+import { signOut } from 'firebase/auth';
+import { Capacitor } from '@capacitor/core';
 import { useState, useCallback } from 'react';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
 import Popover from '@mui/material/Popover';
 import Divider from '@mui/material/Divider';
-import MenuList from '@mui/material/MenuList';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
-import { useRouter, usePathname } from 'src/routes/hooks';
+import { useRouter } from 'src/routes/hooks';
+import { auth as firebaseAuth } from 'src/routes/components/first-use';
 
-import { formatFilePath } from 'src/utils/format-filepath';
-
+import { t } from 'src/i18n';
 import { useAuth } from 'src/store/auth';
-import { hanldeLogout } from 'src/api/logout';
 
 // ----------------------------------------------------------------------
 
@@ -35,33 +35,15 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
   const router = useRouter();
   const { auth, setAuth } = useAuth();
   const [isLogout, setIsLogout] = useState(false);
-
-  const pathname = usePathname();
-
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
-  const handleOpenPopover = useCallback(
-    (event: React.MouseEvent<HTMLButtonElement>) => {
-      if (auth) {
-        setOpenPopover(event.currentTarget);
-      } else {
-        router.push('/sign-in');
-      }
-    },
-    [auth, router]
-  );
+  const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+    setOpenPopover(event.currentTarget);
+  }, []);
 
   const handleClosePopover = useCallback(() => {
     setOpenPopover(null);
   }, []);
-
-  const handleClickItem = useCallback(
-    (path: string) => {
-      handleClosePopover();
-      router.push(path);
-    },
-    [handleClosePopover, router]
-  );
 
   return (
     <>
@@ -77,10 +59,7 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
         }}
         {...other}
       >
-        <Avatar
-          src={auth?.avatarUrl ? formatFilePath(auth?.avatarUrl) : undefined}
-          sx={{ width: 1, height: 1 }}
-        >
+        <Avatar src={auth?.avatarUrl} sx={{ width: 1, height: 1 }}>
           {auth?.name?.charAt(0).toUpperCase()}
         </Avatar>
       </IconButton>
@@ -109,47 +88,6 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
 
         <Divider sx={{ borderStyle: 'dashed' }} />
 
-        <MenuList
-          disablePadding
-          sx={{
-            p: 1,
-            gap: 0.5,
-            display: 'flex',
-            flexDirection: 'column',
-            [`& .${menuItemClasses.root}`]: {
-              px: 1,
-              gap: 2,
-              borderRadius: 0.75,
-              color: 'text.secondary',
-              '&:hover': { color: 'text.primary' },
-              [`&.${menuItemClasses.selected}`]: {
-                color: 'text.primary',
-                bgcolor: 'action.selected',
-                fontWeight: 'fontWeightSemiBold',
-              },
-            },
-          }}
-        >
-          {data.map((option) => (
-            <MenuItem
-              key={option.label}
-              selected={option.href === pathname}
-              onClick={() => {
-                if (option.onClick) {
-                  option.onClick();
-                } else {
-                  handleClickItem(option.href);
-                }
-              }}
-            >
-              {option.icon}
-              {option.label}
-            </MenuItem>
-          ))}
-        </MenuList>
-
-        <Divider sx={{ borderStyle: 'dashed' }} />
-
         <Box sx={{ p: 1 }}>
           <Button
             fullWidth
@@ -157,18 +95,26 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
             size="medium"
             variant="text"
             loading={isLogout}
-            onClick={() => {
-              setIsLogout(true);
-              hanldeLogout()
-                .then(() => {
-                  setAuth(null);
-                  router.push('/sign-in');
-                  return null;
-                })
-                .finally(() => setIsLogout(false));
+            onClick={async () => {
+              // setIsLogout(true);
+              try {
+                if (Capacitor.isNativePlatform()) {
+                  await FirebaseAuthentication.signOut();
+                } else {
+                  await signOut(firebaseAuth);
+                }
+                localStorage.removeItem('auth');
+                setAuth(null);
+                setIsLogout(false);
+                window.location.reload();
+              } catch {
+                setIsLogout(false);
+              } finally {
+                handleClosePopover();
+              }
             }}
           >
-            Logout
+            {t('Logout')}
           </Button>
         </Box>
       </Popover>

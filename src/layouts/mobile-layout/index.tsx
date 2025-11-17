@@ -2,11 +2,12 @@ import { create } from 'zustand';
 import { merge } from 'es-toolkit';
 import { useCallback } from 'react';
 
-import { useTheme } from '@mui/material';
+import { Box, useTheme } from '@mui/material';
 
 import { Logo } from 'src/components/logo';
 
 import { Footer } from './footer';
+import { AccountPopover } from '../components/account-popover';
 import { MainSection, LayoutSection, HeaderSection } from '../core';
 
 import type { HeaderSectionProps } from '../core';
@@ -40,6 +41,11 @@ export function MobileLayout({
 
     const headerSlots: HeaderSectionProps['slots'] = {
       leftArea: <Logo />,
+      rightArea: (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0, sm: 0.75 } }}>
+          <AccountPopover data={[]} />
+        </Box>
+      ),
     };
 
     return (
