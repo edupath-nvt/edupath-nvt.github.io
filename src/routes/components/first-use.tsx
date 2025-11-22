@@ -1,5 +1,4 @@
 import { t } from 'i18next';
-import { useState } from 'react';
 import { create } from 'zustand';
 import { Capacitor } from '@capacitor/core';
 import { initializeApp } from 'firebase/app';
@@ -34,7 +33,6 @@ export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
 export function FirstUse() {
-  const [step, setStep] = useState(0);
   const { open, setOpen } = useFirstUse();
   const { setAuth } = useAuth();
 
@@ -77,20 +75,36 @@ export function FirstUse() {
       <DialogContent>
         <Box overflow="hidden">
           <Row sx={{ display: 'flex', '&>*': { flex: '0 0 100%' } }}>
-            <Stack spacing={3}>
-              <Typography variant="h2">{t('Welcome to Edupath')}</Typography>
+            <Stack gap={3}>
+              <Typography variant="h3" textAlign="center">
+                {t('Welcome to Edupath')}
+              </Typography>
               <Typography variant="body2" color="textSecondary">
                 {t(
                   'Track your learning journey. Please sign in with your Google account to continue using the app.'
                 )}
               </Typography>
               <Button
+                size="large"
                 variant="outlined"
                 onClick={Login}
                 startIcon={<Iconify icon="flat-color-icons:google" />}
+                sx={{ mt: 3 }}
               >
                 {t('Sign in with Google')}
               </Button>
+              {Capacitor.getPlatform() === 'web' && (
+                <Button
+                  size="large"
+                  variant="outlined"
+                  LinkComponent="a"
+                  href="/edupath.apk"
+                  download="edupath.apk"
+                  startIcon={<Iconify icon="flat-color-icons:android-os" />}
+                >
+                  {t('Download app android')}
+                </Button>
+              )}
             </Stack>
           </Row>
         </Box>

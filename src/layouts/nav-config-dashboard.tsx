@@ -25,11 +25,6 @@ export const navData = [
     icon: icon('ic-calendar'),
   },
   {
-    title: t('Leaderboard'),
-    path: '/leaderboard',
-    icon: icon('ic-analytics'),
-  },
-  {
     title: t('Setting'),
     path: '/setting',
     icon: icon('ic-setting'),

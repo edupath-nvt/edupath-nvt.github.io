@@ -13,7 +13,6 @@ import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 
-import { useRouter } from 'src/routes/hooks';
 import { auth as firebaseAuth } from 'src/routes/components/first-use';
 
 import { t } from 'src/i18n';
@@ -32,7 +31,6 @@ export type AccountPopoverProps = IconButtonProps & {
 };
 
 export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps) {
-  const router = useRouter();
   const { auth, setAuth } = useAuth();
   const [isLogout, setIsLogout] = useState(false);
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
