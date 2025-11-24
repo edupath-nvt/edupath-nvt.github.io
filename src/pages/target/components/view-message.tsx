@@ -41,7 +41,7 @@ export function ViewMessage({
   }
 
   return (
-    <Typography variant="caption" sx={{ color }}>
+    <Typography variant="caption" sx={{ color, height: 50, display: 'block' }}>
       {message} {avg.toFixed(2)}/{target.toFixed(2)} <br />
       {require !== 0 && t('require score') + ' ' + require.toFixed(2)}
     </Typography>

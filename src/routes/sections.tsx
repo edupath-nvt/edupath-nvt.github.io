@@ -34,6 +34,10 @@ const routesSection: RouteObject[] = [
         Component: lazy(() => import('src/pages/settings/page')),
       },
       {
+        path: '/ai-analysis',
+        Component: lazy(() => import('src/pages/ai-analysis/page')),
+      },
+      {
         path: '*',
         Component: lazy(() => import('src/pages/not-found-view/index')),
       },

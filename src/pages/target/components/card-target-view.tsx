@@ -42,8 +42,8 @@ export function CardTargetView({
     <Box
       sx={{
         borderRadius: 2,
-        outline: 1,
-        outlineColor: target.score !== 0 ? color : 'transparent',
+        border: 2,
+        borderColor: target.score !== 0 ? color : 'transparent',
         bgcolor: 'background.paper',
       }}
     >

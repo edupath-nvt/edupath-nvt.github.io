@@ -17,7 +17,7 @@ import DialogAdd, { form, useDialogAdd } from './dialog/dialog-add';
 import DialogAddScore, { useDialogAddScore, form as formScore } from './dialog/dialog-add-score';
 
 export default function Page() {
-  const [targetList, setTargetList] = useState<TargetValue[]>([]);
+  const [targetList, setTargetList] = useState<TargetValue[]>();
   const { setOpen, open } = useDialogAdd();
   const { setOpen: setOpenScore, open: openScore } = useDialogAddScore();
   const handleEdit = useCallback(
@@ -53,6 +53,13 @@ export default function Page() {
     }
   }, [open, openScore]);
 
+  useEffect(() => {
+    if (targetList && targetList.length === 0) {
+      setOpen(true);
+      form.reset(defaultAddTarget('Toán'));
+    }
+  }, [setOpen, targetList]);
+
   return (
     <>
       <Stack spacing={2}>
@@ -67,7 +74,7 @@ export default function Page() {
         </Button>
         <CarouselConfig
           options={{ loop: true }}
-          listSrc={targetList}
+          listSrc={targetList || []}
           render={({ item: target }) => (
             <CardTargetView
               onClickExams={handleClickExams(
@@ -104,11 +111,13 @@ export default function Page() {
                 <Typography
                   variant="caption"
                   sx={{
-                    color: score !== 0 ? getColor(score, requiredAvg, 'text.secondary') : 'text.secondary',
+                    color:
+                      score !== 0
+                        ? getColor(score, requiredAvg, 'text.secondary')
+                        : 'text.secondary',
                   }}
                 >
-                  {score.toFixed(2)}/
-                  {target.toFixed(2)}
+                  {score.toFixed(2)}/{target.toFixed(2)}
                 </Typography>
               </Stack>
             );

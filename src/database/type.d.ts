@@ -27,3 +27,15 @@ type Schedule = {
     title?: string;
     body?: string;
 }
+
+type TargetDatabase = {
+    id?: number
+    name: string
+    target: {
+        targets: Target[]
+        scores: Score[]
+        schedules: Schedule[]
+    }
+    md5: string
+    time: number
+}

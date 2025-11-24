@@ -1,7 +1,14 @@
+type User = {
+    id?: number
+    displayName: string
+    email: string
+    photoURL: string
+}
+
 type AuthState = {
-   auth: User | null
+    auth: User | null
 }
 
 type AuthActions = {
-    setAuth: (auth: AuthState['auth']) => void
+    setAuth: (auth: User | null) => void
 }

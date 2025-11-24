@@ -42,6 +42,7 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
   const handleClosePopover = useCallback(() => {
     setOpenPopover(null);
   }, []);
+  
 
   return (
     <>
@@ -57,8 +58,8 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
         }}
         {...other}
       >
-        <Avatar src={auth?.avatarUrl} sx={{ width: 1, height: 1 }}>
-          {auth?.name?.charAt(0).toUpperCase()}
+        <Avatar src={auth?.photoURL} sx={{ width: 1, height: 1 }}>
+          {auth?.displayName?.charAt(0).toUpperCase()}
         </Avatar>
       </IconButton>
 
@@ -76,7 +77,7 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
       >
         <Box sx={{ p: 2, pb: 1.5 }}>
           <Typography variant="subtitle2" noWrap>
-            {auth?.name}
+            {auth?.displayName}
           </Typography>
 
           <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
@@ -101,7 +102,7 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
                 } else {
                   await signOut(firebaseAuth);
                 }
-                localStorage.removeItem('auth');
+                localStorage.removeItem('access_token');
                 setAuth(null);
                 setIsLogout(false);
                 window.location.reload();

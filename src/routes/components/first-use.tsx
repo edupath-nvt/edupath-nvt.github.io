@@ -7,8 +7,10 @@ import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 import { Box, Stack, Dialog, Button, Typography, DialogContent } from '@mui/material';
 
+import { API } from 'src/api/axios';
 import { useAuth } from 'src/store/auth';
 
+import { toast } from 'src/components/toast';
 import { Row } from 'src/components/views/row';
 import { Iconify } from 'src/components/iconify';
 
@@ -37,37 +39,33 @@ export function FirstUse() {
   const { setAuth } = useAuth();
 
   const Login = async () => {
-    if (PLATFORM === 'web') {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      localStorage.setItem('auth', JSON.stringify(result.user));
-      setAuth({
-        email: result.user?.email ?? '',
-        name: result.user?.displayName ?? '',
-        avatarUrl: result.user?.photoURL ?? '',
-        id: '',
-        phone: null,
-        address: null,
-        isActive: true,
-        createdAt: '',
-        updatedAt: '',
-      });
-      setOpen(false);
-    } else {
-      const result = await FirebaseAuthentication.signInWithGoogle();
-      localStorage.setItem('auth', JSON.stringify(result.user));
-      setAuth({
-        email: result.user?.email ?? '',
-        name: result.user?.displayName ?? '',
-        avatarUrl: result.user?.photoUrl ?? '',
-        id: '',
-        phone: null,
-        address: null,
-        isActive: true,
-        createdAt: '',
-        updatedAt: '',
-      });
-      setOpen(false);
+    try {
+      if (PLATFORM === 'web') {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        const access_token = await API.getToken({
+          displayName: result.user.displayName!,
+          email: result.user.email!,
+          photoURL: result.user.photoURL!,
+        });
+        localStorage.setItem('access_token', access_token);
+        setAuth(JSON.parse(atob(access_token.split('.')[1])));
+        setOpen(false);
+      } else {
+        const result = await FirebaseAuthentication.signInWithGoogle();
+        const user = result.user!;
+        const access_token = await API.getToken({
+          displayName: user.displayName!,
+          email: user.email!,
+          photoURL: user.photoUrl!,
+        });
+        localStorage.setItem('access_token', access_token);
+        setAuth(JSON.parse(atob(access_token.split('.')[1])));
+        setOpen(false);
+      }
+    } catch {
+      toast.error(t('Error in login'), { id: 'msg' });
+      localStorage.removeItem('access_token');
     }
   };
   return (

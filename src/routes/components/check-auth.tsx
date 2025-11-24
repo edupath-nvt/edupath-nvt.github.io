@@ -1,5 +1,3 @@
-import type { UserCredential } from 'firebase/auth';
-
 import { useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { Style, StatusBar } from '@capacitor/status-bar';
@@ -36,21 +34,11 @@ export function CheckAuth({ children }: React.PropsWithChildren) {
   const { setAuth } = useAuth();
 
   useEffect(() => {
-    const authData: UserCredential['user'] = JSON.parse(localStorage.getItem('auth') || '{}');
-    if (!authData.email) {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
       setOpen(true);
     } else {
-      setAuth({
-        email: authData?.email ?? '',
-        name: authData?.displayName ?? '',
-        avatarUrl: authData?.photoURL ?? '',
-        id: '',
-        phone: null,
-        address: null,
-        isActive: true,
-        createdAt: '',
-        updatedAt: '',
-      });
+      setAuth(JSON.parse(atob(token.split('.')[1])));
       setOpen(false);
     }
 
@@ -65,7 +53,7 @@ export function CheckAuth({ children }: React.PropsWithChildren) {
   return (
     <>
       {!open && children}
-      {!localStorage.getItem('auth') && <FirstUse />}
+      {!localStorage.getItem('access_token') && <FirstUse />}
     </>
   );
 }
