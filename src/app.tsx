@@ -34,7 +34,6 @@ import { useTheme } from '@mui/material';
 import { cyan } from '@mui/material/colors';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
-import { DatabaseAction } from './database/database';
 import { useLayoutPadding } from './layouts/mobile-layout';
 import { useCreateDatabase } from './database/use-databse';
 import { useThemeData, generateColorPalette } from './hooks/use-theme-data';
@@ -89,7 +88,6 @@ export default function App({ children }: AppProps) {
           bottom: Capacitor.isNativePlatform() ? theme.spacing(bottom + 12) : 'unset',
         }}
       />
-      <DatabaseAction />
     </ThemeProvider>
   );
 }

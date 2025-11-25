@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import { useLiveQuery } from "dexie-react-hooks";
 
 import { API } from "src/api/axios";
+import { useAuth } from "src/store/auth";
 
 import { db } from "./dexie";
 
@@ -22,8 +23,9 @@ export const useDatabase = create<TypeDataBase>((set) => ({
 
 export const useCreateDatabase = () => {
     const { current } = useDatabase();
+    const { auth } = useAuth();
     const [targetSer, setTargetSer] = useState<TargetDatabase>()
-    const { md5, target: _target } = useLiveQuery(async () => {
+    const { md5, target: _target, count } = useLiveQuery(async () => {
         const json = {
             targets: await db.targets.toArray(),
             scores: await db.scores.toArray(),
@@ -31,14 +33,14 @@ export const useCreateDatabase = () => {
         }
         const _md5 = SparkMD5.hash(JSON.stringify(json))
         localStorage.setItem('md5', _md5)
-        return { md5: _md5, target: json }
+        return { md5: _md5, target: json, count: await db.targets.count() }
     }, []) || { md5: '', target: { targets: [], scores: [], schedules: [] } }
 
     useEffect(() => {
-        if (current) {
+        if (current && auth && auth.id) {
             API.getTarget(current).then((target) => {
                 setTargetSer(target)
-                if (target.md5 !== localStorage.getItem('md5') && target.time >= Number(localStorage.getItem('time'))) {
+                if (target.md5 !== localStorage.getItem('md5') && target.time >= Number(localStorage.getItem('time') || '0')) {
                     db.targets.clear()
                     db.scores.clear()
                     db.schedules.clear()
@@ -50,15 +52,19 @@ export const useCreateDatabase = () => {
                 localStorage.removeItem('id_target')
                 localStorage.removeItem('md5')
                 localStorage.removeItem('time')
+                db.targets.clear()
+                db.scores.clear()
+                db.schedules.clear()
             })
         }
-    }, [current])
+    }, [auth, current])
+
 
     useEffect(() => {
-        if (md5 && targetSer && md5 !== targetSer.md5) {
+        if (md5 && targetSer && md5 !== targetSer.md5 && count) {
             const time = dayjs().unix()
             localStorage.setItem('time', String(time))
             API.asyncTarget({ ...targetSer, target: _target, md5, time }).then(() => setTargetSer({ ...targetSer, md5 }))
         }
-    }, [_target, md5, targetSer])
+    }, [_target, count, md5, targetSer])
 }

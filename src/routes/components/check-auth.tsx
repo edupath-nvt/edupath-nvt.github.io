@@ -30,7 +30,7 @@ const PLATFORM = Capacitor.getPlatform();
 
 export function CheckAuth({ children }: React.PropsWithChildren) {
   const { set } = useLayoutPadding();
-  const { setOpen, open } = useFirstUse();
+  const { setOpen } = useFirstUse();
   const { setAuth } = useAuth();
 
   useEffect(() => {
@@ -52,7 +52,7 @@ export function CheckAuth({ children }: React.PropsWithChildren) {
 
   return (
     <>
-      {!open && children}
+      {children}
       {!localStorage.getItem('access_token') && <FirstUse />}
     </>
   );

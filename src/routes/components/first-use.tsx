@@ -9,6 +9,7 @@ import { Box, Stack, Dialog, Button, Typography, DialogContent } from '@mui/mate
 
 import { API } from 'src/api/axios';
 import { useAuth } from 'src/store/auth';
+import { useDatabase } from 'src/database/use-databse';
 
 import { toast } from 'src/components/toast';
 import { Row } from 'src/components/views/row';
@@ -37,6 +38,7 @@ export const auth = getAuth(app);
 export function FirstUse() {
   const { open, setOpen } = useFirstUse();
   const { setAuth } = useAuth();
+  const { setCurrent } = useDatabase();
 
   const Login = async () => {
     try {
@@ -62,6 +64,7 @@ export function FirstUse() {
         localStorage.setItem('access_token', access_token);
         setAuth(JSON.parse(atob(access_token.split('.')[1])));
         setOpen(false);
+        setCurrent(Number(localStorage.getItem('id_target')));
       }
     } catch {
       toast.error(t('Error in login'), { id: 'msg' });

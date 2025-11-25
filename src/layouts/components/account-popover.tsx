@@ -16,6 +16,7 @@ import IconButton from '@mui/material/IconButton';
 import { auth as firebaseAuth } from 'src/routes/components/first-use';
 
 import { t } from 'src/i18n';
+import { db } from 'src/database/dexie';
 import { useAuth } from 'src/store/auth';
 
 // ----------------------------------------------------------------------
@@ -42,7 +43,6 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
   const handleClosePopover = useCallback(() => {
     setOpenPopover(null);
   }, []);
-  
 
   return (
     <>
@@ -110,6 +110,9 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
                 setIsLogout(false);
               } finally {
                 handleClosePopover();
+                await db.targets.clear();
+                await db.scores.clear();
+                await db.schedules.clear();
               }
             }}
           >

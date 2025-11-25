@@ -84,50 +84,52 @@ export function CarouselConfig<T>({
             </Box>
           ))}
         </Box>
-        <Box
-          bgcolor={(t) => varAlpha(t.palette.grey['900Channel'], 0.48)}
-          sx={{
-            position: 'absolute',
-            bottom: (t) => t.spacing(2),
-            right: (t) => t.spacing(2),
-            display: 'flex',
-            alignItems: 'center',
-            p: 0.5,
-            gap: 1,
-            borderRadius: 1,
-            '& > button': {
-              borderRadius: 0.75,
-              color: '#fff',
-              minWidth: 'unset',
-            },
-          }}
-        >
-          <Button
-            size="small"
-            disabled={!options.loop && selectedIndex === 0}
-            onClick={() => {
-              setSelectedIndex((t) => t - 1);
-              emblaMainApi?.scrollPrev();
-              emblaThumbsApi?.scrollPrev();
+        {listSrc.length > 1 && (
+          <Box
+            bgcolor={(t) => varAlpha(t.palette.grey['900Channel'], 0.48)}
+            sx={{
+              position: 'absolute',
+              bottom: (t) => t.spacing(2),
+              right: (t) => t.spacing(2),
+              display: 'flex',
+              alignItems: 'center',
+              p: 0.5,
+              gap: 1,
+              borderRadius: 1,
+              '& > button': {
+                borderRadius: 0.75,
+                color: '#fff',
+                minWidth: 'unset',
+              },
             }}
           >
-            <Iconify icon="eva:arrow-ios-forward-fill" sx={{ scale: -1 }} />
-          </Button>
-          <Box sx={{ fontWeight: 600, fontSize: '0.875rem', lineHeight: 1.57143, color: '#fff' }}>
-            {selectedIndex + 1}/{listSrc.length}
+            <Button
+              size="small"
+              disabled={!options.loop && selectedIndex === 0}
+              onClick={() => {
+                setSelectedIndex((t) => t - 1);
+                emblaMainApi?.scrollPrev();
+                emblaThumbsApi?.scrollPrev();
+              }}
+            >
+              <Iconify icon="eva:arrow-ios-forward-fill" sx={{ scale: -1 }} />
+            </Button>
+            <Box sx={{ fontWeight: 600, fontSize: '0.875rem', lineHeight: 1.57143, color: '#fff' }}>
+              {selectedIndex + 1}/{listSrc.length}
+            </Box>
+            <Button
+              size="small"
+              disabled={!options.loop && selectedIndex === listSrc.length - 1}
+              onClick={() => {
+                setSelectedIndex((t) => t + 1);
+                emblaMainApi?.scrollNext();
+                emblaThumbsApi?.scrollNext();
+              }}
+            >
+              <Iconify icon="eva:arrow-ios-forward-fill" />
+            </Button>
           </Box>
-          <Button
-            size="small"
-            disabled={!options.loop && selectedIndex === listSrc.length - 1}
-            onClick={() => {
-              setSelectedIndex((t) => t + 1);
-              emblaMainApi?.scrollNext();
-              emblaThumbsApi?.scrollNext();
-            }}
-          >
-            <Iconify icon="eva:arrow-ios-forward-fill" />
-          </Button>
-        </Box>
+        )}
       </Box>
       <Box mx="auto" overflow="hidden" ref={emblaThumbsRef}>
         <Box display="flex" gap={1} justifyContent="center">

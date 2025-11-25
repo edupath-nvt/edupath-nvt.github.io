@@ -1,9 +1,11 @@
+import { useLiveQuery } from 'dexie-react-hooks';
 import { useState, useEffect, useCallback } from 'react';
 
 import { Stack, Button, Avatar, Typography } from '@mui/material';
 
 import { t } from 'src/i18n';
 import { db } from 'src/database/dexie';
+import { useAuth } from 'src/store/auth';
 import { Subjects, defaultAddTarget } from 'src/mock/default-data';
 
 import { Iconify } from 'src/components/iconify';
@@ -19,6 +21,8 @@ import DialogAddScore, { useDialogAddScore, form as formScore } from './dialog/d
 export default function Page() {
   const [targetList, setTargetList] = useState<TargetValue[]>();
   const { setOpen, open } = useDialogAdd();
+  const { auth } = useAuth();
+  const _targets = useLiveQuery(() => db.targets.toArray(), []);
   const { setOpen: setOpenScore, open: openScore } = useDialogAddScore();
   const handleEdit = useCallback(
     async (id: number) => {
@@ -48,17 +52,19 @@ export default function Page() {
   );
 
   useEffect(() => {
-    if (!open && !openScore) {
+    if (!open && !openScore && _targets?.length) {
       getScore().then(setTargetList);
     }
-  }, [open, openScore]);
+  }, [_targets?.length, open, openScore]);
 
   useEffect(() => {
-    if (targetList && targetList.length === 0) {
+    if (auth && _targets?.length === 0) {
       setOpen(true);
       form.reset(defaultAddTarget('Toán'));
+    } else {
+      setOpen(false);
     }
-  }, [setOpen, targetList]);
+  }, [_targets?.length, auth, setOpen]);
 
   return (
     <>
