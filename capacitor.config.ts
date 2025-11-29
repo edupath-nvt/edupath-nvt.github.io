@@ -5,10 +5,12 @@ const config: CapacitorConfig = {
   appName: 'Edupath',
   webDir: 'dist',
   plugins: {
-    CapacitorFirebaseAuthentication: {
-      authDomain: 'edupath-nvt-715cb.firebaseapp.com',
+    FirebaseAuthentication: {
       skipNativeAuth: false,
-      providers: ['google.com']
+      providers: ['google.com'],
+      google: {
+        webClientId: '66651923636-10jhlmic14fvivlvhiivkajvo7hdcit4.apps.googleusercontent.com'
+      }
     }
   }
 };

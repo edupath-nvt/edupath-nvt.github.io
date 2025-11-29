@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="edupath.edu.app.vn"> <!-- Thay bằng package name thực tế -->
+<?xml version="1.0" encoding="utf-8" ?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="edupath.edu.app.vn">
+    <!-- Thay bằng package name thực tế -->
 
     <application
         android:allowBackup="true"
@@ -10,7 +10,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="false">
-
         <!-- Main Activity -->
         <activity
             android:name=".MainActivity"
@@ -19,7 +18,6 @@
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:launchMode="singleTask"
             android:exported="true">
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -32,20 +30,17 @@
             android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
         </provider>
 
         <!-- THÊM: Google Sign-In Metadata (BẮT BUỔC) -->
         <meta-data
             android:name="com.google.android.gms.auth.api.signin.GoogleSignInOptions"
-            android:value="@xml/google_signin_options" />
-
+            android:value="@xml/google_signin_options"
+        />
     </application>
 
     <!-- Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-
 </manifest>
