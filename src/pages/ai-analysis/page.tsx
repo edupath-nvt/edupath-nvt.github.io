@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 
-import { Box, Button, Typography, OutlinedInput, CircularProgress } from '@mui/material';
+import { Box, Button, Avatar, Typography, OutlinedInput, CircularProgress } from '@mui/material';
 
 import { t } from 'src/i18n';
 
@@ -52,7 +52,7 @@ export default function Page() {
               opacity: 0.24,
               justifyContent: 'end',
               alignItems: 'end',
-              scale: 0.5,
+              scale: 0,
             }),
           }}
         >
@@ -93,40 +93,42 @@ export default function Page() {
           }}
         >
           {msg.map((m) => (
-            <Box
-              key={m.content}
-              sx={{
-                bgcolor: (th) => th.vars.palette.background.neutral,
-                px: 2,
-                borderRadius: 2,
-                maxWidth: '90%',
-                ...(m.role === 'user' && {
-                  alignSelf: 'end',
-                  bgcolor: (th) => th.vars.palette.primary.main,
-                  color: (th) => th.vars.palette.primary.contrastText,
-                }),
-                '& p': {
-                  my: 1,
-                },
-              }}
-            >
-              {!m.content && (
-                <Row gap={0.5}>
-                  <CircularProgress size={16} color="inherit" /> {t('Loading...')}
-                </Row>
-              )}
-              {m.content.startsWith('[') ? (
-                m.content.startsWith('[Lỗi') ? (
-                  <Typography color="error">{m.content}</Typography>
-                ) : (
-                  <Row gap={0.5}>
-                    <CircularProgress size={16} color="inherit" /> {t('Function call...')}
-                  </Row>
-                )
-              ) : (
-                <ReactMarkdown>{m.content}</ReactMarkdown>
-              )}
-            </Box>
+            <Row key={m.content} alignItems="end" gap={0.5}>
+              {m.role === 'assistant' && <Avatar src="/assets/images/edubot.webp" />}
+              <Box
+                sx={{
+                  bgcolor: (th) => th.vars.palette.background.neutral,
+                  px: 2,
+                  borderRadius: 2,
+                  maxWidth: 'calc(90% - 48px)',
+                  ...(m.role === 'user' && {
+                    alignSelf: 'end',
+                    bgcolor: (th) => th.vars.palette.primary.main,
+                    color: (th) => th.vars.palette.primary.contrastText,
+                  }),
+                  '& p': {
+                    my: 1,
+                  },
+                }}
+              >
+                {m.role === 'assistant' &&
+                  (!m.content ? (
+                    <Row gap={0.5}>
+                      <CircularProgress size={16} color="inherit" /> {t('Loading...')}
+                    </Row>
+                  ) : m.content.startsWith('[') ? (
+                    m.content.startsWith('[Lỗi') ? (
+                      <Typography color="error">{m.content}</Typography>
+                    ) : (
+                      <Row gap={0.5}>
+                        <CircularProgress size={16} color="inherit" /> {t('Function call...')}
+                      </Row>
+                    )
+                  ) : (
+                    <ReactMarkdown>{m.content}</ReactMarkdown>
+                  ))}
+              </Box>
+            </Row>
           ))}
         </Box>
       </Box>
