@@ -29,7 +29,11 @@ export default function Page() {
 
   const submit = handleSubmit(async (data) => {
     setValue('message', '');
-    setMsg((pre) => [...pre, { role: 'user', content: data.message }, { role: 'assistant', content: '' }]);
+    setMsg((pre) => [
+      ...pre,
+      { role: 'user', content: data.message },
+      { role: 'assistant', content: '' },
+    ]);
     await API.chat([...msg, { role: 'user', content: data.message }], setMsg);
   });
 
