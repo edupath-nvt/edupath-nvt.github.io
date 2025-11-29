@@ -65,6 +65,21 @@ const API = {
       if (functionData[0] === 'add_score') {
         try {
           const now = new Date();
+          const target = await db.targets.where('subject').equals(functionData[1]['subject']).first();
+          if (target) {
+            const score = await db.scores.where({ subject: functionData[1]['subject'] as Subjects, exams: functionData[1]['exams'] as Exams }).count();
+            if (target.exams[functionData[1]['exams'] as Exams] >= score) {
+              messageResponse.content = `Đã nhập đầy đủ điểm nên không thể thêm điểm nữa`
+              messageResponse.noServer = true;
+              onMessage((pre) => [...pre])
+              return
+            }
+          } else {
+            messageResponse.content = `Chưa đặt mục tiêu cho môn học ${functionData[1]['subject']} nên không thể thêm điểm`
+            messageResponse.noServer = true;
+            onMessage((pre) => [...pre])
+            return
+          }
           await db.scores.add({
             subject: functionData[1]['subject'] as Subjects,
             exams: functionData[1]['exams'] as Exams,

@@ -5,7 +5,17 @@ import { initializeApp } from 'firebase/app';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
-import { Box, Stack, Dialog, Button, Typography, DialogContent } from '@mui/material';
+import {
+  Box,
+  Stack,
+  Dialog,
+  Button,
+  Divider,
+  MenuItem,
+  TextField,
+  Typography,
+  DialogContent,
+} from '@mui/material';
 
 import { API } from 'src/api/axios';
 import { useAuth } from 'src/store/auth';
@@ -14,6 +24,8 @@ import { useDatabase } from 'src/database/use-databse';
 import { toast } from 'src/components/toast';
 import { Row } from 'src/components/views/row';
 import { Iconify } from 'src/components/iconify';
+
+import { useRouter } from '../hooks';
 
 const PLATFORM = Capacitor.getPlatform();
 
@@ -39,6 +51,7 @@ export function FirstUse() {
   const { open, setOpen } = useFirstUse();
   const { setAuth } = useAuth();
   const { setCurrent } = useDatabase();
+  const router = useRouter();
 
   const Login = async () => {
     try {
@@ -85,12 +98,26 @@ export function FirstUse() {
                   'Track your learning journey. Please sign in with your Google account to continue using the app.'
                 )}
               </Typography>
+
+              <TextField
+                label={t('Language')}
+                select
+                value={localStorage.getItem('i18nextLng')}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  localStorage.setItem('i18nextLng', value);
+                  router.refresh();
+                }}
+              >
+                <MenuItem value="en">{t('English')}</MenuItem>
+                <MenuItem value="vi">{t('Vietnamese')}</MenuItem>
+              </TextField>
+              <Divider sx={{ typography: 'caption' }}>{t('ACTION')}</Divider>
               <Button
                 size="large"
                 variant="outlined"
                 onClick={Login}
                 startIcon={<Iconify icon="flat-color-icons:google" />}
-                sx={{ mt: 3 }}
               >
                 {t('Sign in with Google')}
               </Button>

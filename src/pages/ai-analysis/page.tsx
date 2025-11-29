@@ -1,12 +1,12 @@
 import { useRef, useState, useEffect } from 'react';
 
-import { Box, Button, OutlinedInput } from '@mui/material';
+import { Box, Button, Typography, OutlinedInput, CircularProgress } from '@mui/material';
 
 import { t } from 'src/i18n';
 
 import { Iconify } from 'src/components/iconify';
 
-export type Message = { role: 'user' | 'assistant'; content: string, noServer?: boolean }[];
+export type Message = { role: 'user' | 'assistant'; content: string; noServer?: boolean }[];
 
 import ReactMarkdown from 'react-markdown';
 import { useForm, Controller } from 'react-hook-form';
@@ -20,7 +20,7 @@ export default function Page() {
     control,
     handleSubmit,
     setValue,
-    formState: { isSubmitting },
+    formState: { isSubmitting, isValid },
   } = useForm<{ message: string }>();
 
   const view = useRef<HTMLDivElement>(null);
@@ -40,16 +40,44 @@ export default function Page() {
   return (
     <Box position="relative" flex={1} display="flex" flexDirection="column">
       <Box flex={1} position="relative" mb={2}>
-        <Center position="absolute" sx={{ inset: 0, opacity: 0.08 }}>
+        <Center
+          position="absolute"
+          sx={{
+            inset: 0,
+            transition: 'all 1s ease',
+            transformOrigin: 'bottom right',
+            ...(msg.length !== 0 && {
+              opacity: 0.24,
+              justifyContent: 'end',
+              alignItems: 'end',
+              scale: 0.5,
+            }),
+          }}
+        >
           <Box
             sx={{
               animation: 'bounce 1.2s infinite',
               position: 'relative',
+              width: 0.5,
+              ...(msg.length === 0 && {
+                '&::after': {
+                  content: `"${t("Hello, I'm Edubot!")}"`,
+                  position: 'absolute',
+                  left: '75%',
+                  maxWidth: 100,
+                  width: 'max-content',
+                  bgcolor: (th) => th.vars.palette.background.paper,
+                  borderRadius: 1,
+                  border: 1,
+                  borderColor: 'divider',
+                  px: 1,
+                  py: 0.5,
+                },
+              }),
             }}
-            component="img"
-            width={0.5}
-            src="/assets/images/edubot.webp"
-          />
+          >
+            <Box component="img" src="/assets/images/edubot.webp" />
+          </Box>
         </Center>
         <Box
           ref={view}
@@ -75,10 +103,18 @@ export default function Page() {
                   bgcolor: (th) => th.vars.palette.primary.main,
                   color: (th) => th.vars.palette.primary.contrastText,
                 }),
+                '& p': {
+                  my: 1,
+                },
               }}
             >
+              {!m.content && <CircularProgress size={16} sx={{ mt: 1 }} color="inherit" />}
               {m.content.startsWith('[') ? (
-                t('Function call...')
+                m.content.startsWith('[Lỗi') ? (
+                  <Typography color="error">{m.content}</Typography>
+                ) : (
+                  t('Function call...')
+                )
               ) : (
                 <ReactMarkdown>{m.content}</ReactMarkdown>
               )}
@@ -102,6 +138,7 @@ export default function Page() {
           control={control}
           name="message"
           defaultValue=""
+          rules={{ required: true }}
           render={({ field }) => (
             <OutlinedInput
               size="small"
@@ -113,6 +150,7 @@ export default function Page() {
           )}
         />
         <Button
+          disabled={!isValid}
           type="submit"
           color="primary"
           variant="contained"
