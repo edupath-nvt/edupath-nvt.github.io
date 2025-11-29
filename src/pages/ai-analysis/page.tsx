@@ -147,7 +147,7 @@ export default function Page() {
                   <ReactMarkdown>{m.content}</ReactMarkdown>
                 )
               ) : (
-                {m.content}
+                m.content
               )}
             </Box>
           ))}
