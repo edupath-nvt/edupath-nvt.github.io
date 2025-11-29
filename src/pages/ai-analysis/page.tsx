@@ -102,16 +102,15 @@ export default function Page() {
                 px: 2,
                 borderRadius: 2,
                 maxWidth: 'calc(90% - 48px)',
+                boxShadow: (th) => th.customShadows.z12,
                 ...(m.role === 'user' && {
                   alignSelf: 'end',
                   bgcolor: (th) => th.vars.palette.primary.main,
                   color: (th) => th.vars.palette.primary.contrastText,
                 }),
-
                 ...(m.role === 'assistant' && {
                   ml: '48px',
                   position: 'relative',
-                  boxShadow: (th) => th.customShadows.z12,
                   '&::before': {
                     content: '""',
                     height: 40,
