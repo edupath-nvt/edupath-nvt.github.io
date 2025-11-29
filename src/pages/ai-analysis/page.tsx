@@ -111,6 +111,7 @@ export default function Page() {
                 ...(m.role === 'assistant' && {
                   ml: '48px',
                   position: 'relative',
+                  boxShadow: (th) => th.customShadows.z12,
                   '&::before': {
                     content: '""',
                     height: 40,
