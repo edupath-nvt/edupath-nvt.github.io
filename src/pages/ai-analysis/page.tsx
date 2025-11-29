@@ -46,6 +46,7 @@ export default function Page() {
             inset: 0,
             transition: 'all 1s ease',
             transformOrigin: 'bottom right',
+            zIndex: -1,
             ...(msg.length !== 0 && {
               opacity: 0.24,
               justifyContent: 'end',
@@ -58,13 +59,13 @@ export default function Page() {
             sx={{
               animation: 'bounce 1.2s infinite',
               position: 'relative',
-              width: 0.5,
+              width: 0.45,
               ...(msg.length === 0 && {
                 '&::after': {
                   content: `"${t("Hello, I'm Edubot!")}"`,
                   position: 'absolute',
                   left: '75%',
-                  maxWidth: 100,
+                  maxWidth: 150,
                   width: 'max-content',
                   bgcolor: (th) => th.vars.palette.background.paper,
                   borderRadius: 1,
@@ -76,7 +77,7 @@ export default function Page() {
               }),
             }}
           >
-            <Box component="img" src="/assets/images/edubot.webp" />
+            <Box component="img" height={1} src="/assets/images/edubot.webp" />
           </Box>
         </Center>
         <Box
