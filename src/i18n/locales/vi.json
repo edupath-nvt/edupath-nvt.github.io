@@ -23,7 +23,7 @@
   "Exam is require": "Yêu cầu bài kiểm tra",
   "For me": "Dành cho tôi",
   "For subject": "Dành cho môn học",
-  "Function call…": "Đang gọi hàm…",
+  "Function call...": "Đang gọi hàm…",
   "Hello, I'm Edubot!": "Chào, tôi là Edubot!",
   "Input score": "Nhập điểm",
   "It is quite hard to reach the target": "Khá khó để đạt được mục tiêu",
@@ -65,5 +65,6 @@
   "You can achieve the target": "Bạn có thể đạt được mục tiêu",
   "You can do anything": "Bạn có thể làm bất cứ điều gì",
   "hour(s)": "giờ",
-  "require score": "yêu cầu điểm"
+  "require score": "yêu cầu điểm",
+  "Loading...": "Đang tải…"
 }

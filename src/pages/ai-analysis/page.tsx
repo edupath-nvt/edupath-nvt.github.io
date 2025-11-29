@@ -13,6 +13,7 @@ import { useForm, Controller } from 'react-hook-form';
 
 import { API } from 'src/api/axios';
 
+import { Row } from 'src/components/views/row';
 import { Center } from 'src/components/views/center';
 
 export default function Page() {
@@ -109,12 +110,18 @@ export default function Page() {
                 },
               }}
             >
-              {!m.content && <CircularProgress size={16} sx={{ mt: 1 }} color="inherit" />}
+              {!m.content && (
+                <Row gap={0.5}>
+                  <CircularProgress size={16} color="inherit" /> {t('Loading...')}
+                </Row>
+              )}
               {m.content.startsWith('[') ? (
                 m.content.startsWith('[Lỗi') ? (
                   <Typography color="error">{m.content}</Typography>
                 ) : (
-                  t('Function call...')
+                  <Row gap={0.5}>
+                    <CircularProgress size={16} color="inherit" /> {t('Function call...')}
+                  </Row>
                 )
               ) : (
                 <ReactMarkdown>{m.content}</ReactMarkdown>
