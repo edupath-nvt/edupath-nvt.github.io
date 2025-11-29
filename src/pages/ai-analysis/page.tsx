@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 
 import { Box, Button, Typography, OutlinedInput, CircularProgress } from '@mui/material';
 
@@ -16,6 +16,8 @@ import { API } from 'src/api/axios';
 import { Row } from 'src/components/views/row';
 import { Center } from 'src/components/views/center';
 
+import { useMessages } from './store';
+
 export default function Page() {
   const {
     control,
@@ -25,7 +27,7 @@ export default function Page() {
   } = useForm<{ message: string }>();
 
   const view = useRef<HTMLDivElement>(null);
-  const [msg, setMsg] = useState<Message>([]);
+  const { msg, setMsg } = useMessages();
 
   const submit = handleSubmit(async (data) => {
     setValue('message', '');
@@ -102,7 +104,7 @@ export default function Page() {
                 px: 2,
                 borderRadius: 2,
                 maxWidth: 'calc(90% - 48px)',
-                boxShadow: (th) => th.customShadows.z12,
+                boxShadow: (th) => th.vars.customShadows.z12,
                 ...(m.role === 'user' && {
                   alignSelf: 'end',
                   bgcolor: (th) => th.vars.palette.primary.main,
