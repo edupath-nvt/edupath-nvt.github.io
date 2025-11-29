@@ -29,6 +29,7 @@ export default function Page() {
 
   const submit = handleSubmit(async (data) => {
     setValue('message', '');
+    setMsg((pre) => [...pre, { role: 'user', content: data.message }, { role: 'assistant', content: '' }]);
     await API.chat([...msg, { role: 'user', content: data.message }], setMsg);
   });
 
@@ -93,7 +94,13 @@ export default function Page() {
           }}
         >
           {msg.map((m) => (
-            <Row key={m.content} alignItems="end" gap={0.5}>
+            <Row
+              key={m.content}
+              gap={0.5}
+              sx={{
+                alignItems: 'flex-end',
+              }}
+            >
               {m.role === 'assistant' && <Avatar src="/assets/images/edubot.webp" />}
               <Box
                 sx={{
@@ -113,14 +120,14 @@ export default function Page() {
               >
                 {m.role === 'assistant' &&
                   (!m.content ? (
-                    <Row gap={0.5}>
+                    <Row gap={0.5} py={1}>
                       <CircularProgress size={16} color="inherit" /> {t('Loading...')}
                     </Row>
                   ) : m.content.startsWith('[') ? (
                     m.content.startsWith('[Lỗi') ? (
                       <Typography color="error">{m.content}</Typography>
                     ) : (
-                      <Row gap={0.5}>
+                      <Row gap={0.5} py={1}>
                         <CircularProgress size={16} color="inherit" /> {t('Function call...')}
                       </Row>
                     )
