@@ -69,7 +69,7 @@ export default function Page() {
 
   useEffect(() => {
     if (tar) {
-      API.chat(tar);
+      API.chat(tar, console.log);
     }
   }, [tar]);
 
