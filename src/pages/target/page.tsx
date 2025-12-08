@@ -101,7 +101,10 @@ export default function Page() {
               handleEdit={handleEdit}
             />
           )}
-          onChange={(idx) => setTar(targetList?.[idx])}
+          onChange={(idx) => {
+            setTar(targetList?.[idx]);
+            setMsg('Loading...');
+          }}
           renderThumb={({
             item: { subject, target, scores, canSemester, requiredSemester },
             selected,

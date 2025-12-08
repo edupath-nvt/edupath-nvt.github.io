@@ -123,7 +123,7 @@ export function ViewTabSubject({
           control={control}
           name="studyTime"
           defaultValue={1}
-          render={({ field }) => <NumberField min={0.5} step={0.5} {...field} />}
+          render={({ field }) => <NumberField min={0.25} step={0.25} {...field} />}
         />
       </Box>
     </Stack>
