@@ -128,12 +128,15 @@ export const Exams = {
 export const ListExams = Object.keys(Exams) as Exams[];
 export const ListSubjects = Object.keys(Subjects) as Subjects[];
 
-const counts = [4, 2, 1]
+const counts = [4, 1, 1]
 
 export const defaultAddTarget = (subject: Subjects) => ({
     id: undefined,
     target: 8,
-    exams: ListExams.reduce((acc, exam, index) => ({ ...acc, [exam]: counts[index] }), {} as Record<Exams, number>),
+    exams: [
+        ListExams.reduce((acc, exam, index) => ({ ...acc, [exam]: counts[index] }), {} as Record<Exams, number>),
+        ListExams.reduce((acc, exam, index) => ({ ...acc, [exam]: counts[index] }), {} as Record<Exams, number>)
+    ],
     subject,
 })
 

@@ -13,7 +13,7 @@ i18n
     .use(initReactI18next)
     .init({
         resources,
-        fallbackLng: localStorage.getItem('i18nextLng') || 'en',
+        fallbackLng: localStorage.getItem('i18nextLng') || 'vi',
         supportedLngs: ['en', 'vi'],
         interpolation: {
             escapeValue: false,

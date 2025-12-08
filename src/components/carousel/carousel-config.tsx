@@ -22,6 +22,7 @@ type CarouselThumbProps<T> = {
     thumb?: BoxProps;
   };
   sx?: Sx;
+  onChange?: (index: number) => void;
 };
 export function CarouselConfig<T>({
   options = {},
@@ -30,6 +31,7 @@ export function CarouselConfig<T>({
   render,
   renderThumb,
   slotProps = {},
+  onChange,
   sx,
 }: CarouselThumbProps<T>) {
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -59,6 +61,10 @@ export function CarouselConfig<T>({
 
     emblaMainApi.on('select', onSelect).on('reInit', onSelect);
   }, [emblaMainApi, onSelect]);
+
+  useEffect(() => {
+    if (onChange) onChange(selectedIndex);
+  }, [onChange, selectedIndex]);
 
   return (
     <Stack spacing={2} px={{ xs: 0, md: 4 }} sx={sx}>

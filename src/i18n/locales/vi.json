@@ -66,5 +66,10 @@
   "You can do anything": "Bạn có thể làm bất cứ điều gì",
   "hour(s)": "giờ",
   "require score": "yêu cầu điểm",
-  "Loading...": "Đang tải…"
+  "Loading...": "Đang tải…",
+  "Semester ": "Học kỳ ",
+  "exams": "bài",
+  "Reaching {{perecent}}% of your target.": "Đạt {{perecent}}% mục tiêu.",
+  "You can no longer set this target": "Bạn không có thể đạt được mục tiêu này.",
+  "You only need to score at least {{points}} points on the tests to reach your target.": "Bạn chỉ cần đạt {{points}} điểm cho mỗi bài kiểm tra để đạt được mục tiêu."
 }

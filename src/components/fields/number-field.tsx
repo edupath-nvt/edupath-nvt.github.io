@@ -14,10 +14,33 @@ export type NumberFieldProps = {
   max?: number;
   defaultValue?: number;
   step?: number;
-} & Omit<InputBaseProps, 'onChange' | 'value' | 'defaultValue' | 'type'>;
+  size?: 'small' | 'medium' | 'large';
+} & Omit<InputBaseProps, 'onChange' | 'value' | 'defaultValue' | 'type' | 'size'>;
 
 export const NumberField = forwardRef<HTMLDivElement, NumberFieldProps>(
-  ({ value, onChange, min = 0, max = 10, defaultValue = 0, step = 1, ...props }, ref) => {
+  (
+    {
+      value,
+      onChange,
+      min = 0,
+      max = 10,
+      defaultValue = 0,
+      step = 1,
+      disabled,
+      size = 'medium',
+      sx,
+      ...props
+    },
+    ref
+  ) => {
+    const sizeMap = {
+      small: { maxWidth: 80, btnSize: 24, inputHeight: 20 },
+      medium: { maxWidth: 120, btnSize: 32, inputHeight: 24 },
+      large: { maxWidth: 160, btnSize: 40, inputHeight: 32 },
+    };
+
+    const s = sizeMap[size];
+
     const [number, setNumber] = useState<number | string>(defaultValue);
     const flagChange = useRef<boolean>(false);
     useEffect(() => {
@@ -31,17 +54,25 @@ export const NumberField = forwardRef<HTMLDivElement, NumberFieldProps>(
       }
     }, [number, onChange, value]);
     return (
-      <Box>
+      <Box
+        sx={{
+          ...(disabled && {
+            opacity: 0.45,
+            pointerEvents: 'none',
+          }),
+          ...sx,
+        }}
+      >
         <Box
           sx={{
             display: 'flex',
             borderRadius: 1,
             border: (t) => `1px solid ${t.vars.palette.divider}`,
-            maxWidth: 120,
+            maxWidth: s.maxWidth,
             overflow: 'hidden',
             '& > button': {
               display: 'inline-flex',
-              width: 32,
+              width: s.btnSize,
               verticalAlign: 'middle',
               flexShrink: 0,
               '&[disabled]': {
@@ -74,9 +105,8 @@ export const NumberField = forwardRef<HTMLDivElement, NumberFieldProps>(
                 '& input': {
                   textAlign: 'center',
                   py: 0.5,
-                  height: 24,
+                  height: s.inputHeight,
                 },
-                ...props.sx,
               }}
             />
           </Box>

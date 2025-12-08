@@ -1,9 +1,10 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState, useEffect, useCallback } from 'react';
 
-import { Stack, Button, Avatar, Typography } from '@mui/material';
+import { Box, Stack, Button, Avatar, Divider, Typography } from '@mui/material';
 
 import { t } from 'src/i18n';
+import { API } from 'src/api/axios';
 import { db } from 'src/database/dexie';
 import { useAuth } from 'src/store/auth';
 import { Subjects, defaultAddTarget } from 'src/mock/default-data';
@@ -12,15 +13,15 @@ import { Iconify } from 'src/components/iconify';
 import { CarouselConfig } from 'src/components/carousel/carousel-config';
 
 import { getSubject } from './utils/get-subject';
-import { getColor } from './components/view-message';
 import { CardTargetView } from './components/card-target-view';
-import { getScore, type TargetValue } from './utils/get-score';
+import { getTargetData, type TargetData } from './utils/get-score';
 import DialogAdd, { form, useDialogAdd } from './dialog/dialog-add';
 import DialogAddScore, { useDialogAddScore, form as formScore } from './dialog/dialog-add-score';
 
 export default function Page() {
-  const [targetList, setTargetList] = useState<TargetValue[]>();
+  const [targetList, setTargetList] = useState<TargetData[]>();
   const { setOpen, open } = useDialogAdd();
+  const [tar, setTar] = useState<TargetData>();
   const { auth } = useAuth();
   const _targets = useLiveQuery(() => db.targets.toArray(), []);
   const { setOpen: setOpenScore, open: openScore } = useDialogAddScore();
@@ -39,13 +40,13 @@ export default function Page() {
   }, [setOpen]);
 
   const handleClickExams = useCallback(
-    (subject: Subjects, score: number, avg: number) => (exams: Exams) => {
+    (subject: Subjects, score: number, exams: Exams, semester: number) => {
       setOpenScore(true);
       formScore.reset({
         subject,
         exams,
         score: Math.min(Math.round(score * 4) / 4, 10),
-        _score: avg,
+        semester,
       });
     },
     [setOpenScore]
@@ -53,7 +54,7 @@ export default function Page() {
 
   useEffect(() => {
     if (!open && !openScore && _targets?.length) {
-      getScore().then(setTargetList);
+      getTargetData().then(setTargetList);
     }
   }, [_targets?.length, open, openScore]);
 
@@ -65,6 +66,12 @@ export default function Page() {
       setOpen(false);
     }
   }, [_targets?.length, auth, setOpen]);
+
+  useEffect(() => {
+    if (tar) {
+      API.chat(tar);
+    }
+  }, [tar]);
 
   return (
     <>
@@ -83,19 +90,40 @@ export default function Page() {
           listSrc={targetList || []}
           render={({ item: target }) => (
             <CardTargetView
-              onClickExams={handleClickExams(
-                target.subject,
-                Math.max(target.requiredAvg, 8),
-                target.requiredAvg
-              )}
+              onClickExams={handleClickExams}
               target={target}
               handleEdit={handleEdit}
             />
           )}
-          renderThumb={({ item: { subject, score, target, requiredAvg }, selected }) => {
+          onChange={(idx) => setTar(targetList?.[idx])}
+          renderThumb={({
+            item: { subject, target, scores, canSemester, requiredSemester },
+            selected,
+          }) => {
             const Subject = Subjects[subject];
+            const hki = scores[0][0] / Math.max(1, scores[0][1]);
+            const hk2 = scores[1][0] / Math.max(1, scores[1][1]);
+            const avg = canSemester && scores[1][1] !== 0 ? (hki + hk2 * 2) / 3 : hki;
+            const color =
+              requiredSemester[0] > 10 || requiredSemester[1] > 10
+                ? 'error'
+                : requiredSemester[0] > target && requiredSemester[1] > target
+                  ? 'warning'
+                  : 'default';
             return (
-              <Stack alignItems="center" width={65}>
+              <Stack
+                alignItems="center"
+                width={120}
+                sx={{
+                  bgcolor: !selected ? 'background.default' : 'background.paper',
+                  py: 2,
+                  borderRadius: 1,
+                  transition: 'all 0.2s ease-in-out',
+                  cursor: 'pointer',
+                  fontWeight: selected ? 600 : 400,
+                  position: 'relative',
+                }}
+              >
                 <Avatar
                   sx={{
                     scale: 0.65,
@@ -113,17 +141,23 @@ export default function Page() {
                 >
                   <Iconify icon={Subject.icon as any} />
                 </Avatar>
-                <Typography variant="body2">{subject}</Typography>
+                <Typography variant="subtitle1" color={color}>
+                  {subject}
+                </Typography>
                 <Typography
                   variant="caption"
+                  color={color}
                   sx={{
-                    color:
-                      score !== 0
-                        ? getColor(score, requiredAvg, 'text.secondary')
-                        : 'text.secondary',
+                    display: 'flex',
+                    gap: 0.5,
+                    flexDirection: 'column',
+                    fontWeight: 'inherit',
                   }}
                 >
-                  {score.toFixed(2)}/{target.toFixed(2)}
+                  <Divider />
+                  <Box textAlign="center">
+                    {avg.toFixed(2)}/{target.toFixed(2)}
+                  </Box>
                 </Typography>
               </Stack>
             );

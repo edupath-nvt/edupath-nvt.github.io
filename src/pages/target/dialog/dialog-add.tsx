@@ -1,11 +1,13 @@
 import { create } from 'zustand';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useWatch, Controller, useFormState, createFormControl } from 'react-hook-form';
 
 import {
   Box,
+  Tab,
   List,
+  Tabs,
   Stack,
   Button,
   Dialog,
@@ -18,15 +20,14 @@ import {
 
 import { t } from 'src/i18n';
 import { db } from 'src/database/dexie';
-import { Exams, ListExams } from 'src/mock/default-data';
+import { Exams } from 'src/mock/default-data';
 
 import { toast } from 'src/components/toast';
 import { Iconify } from 'src/components/iconify';
-import { ViewScore } from 'src/components/views/view-score';
-import { ScoreField } from 'src/components/fields/score-field';
 import { LabelBorder } from 'src/components/label/label-border';
 import { NumberField } from 'src/components/fields/number-field';
 import { ButtonDelete } from 'src/components/buttons/button-delete';
+import CircularSliderField from 'src/components/fields/slider-score-field';
 
 import { getSubject } from '../utils/get-subject';
 import { SelectSubject } from '../components/select-subject';
@@ -42,24 +43,25 @@ export default function DialogAdd() {
   const { open, setOpen } = useDialogAdd();
   const { isSubmitSuccessful, isLoading } = useFormState(form);
   const subjectList = useLiveQuery(getSubject) ?? [];
+  const [semester, setSemester] = useState(1);
   const [id] = useWatch({ control: form.control, name: ['id'] });
-
-  const defaultValue = useLiveQuery(async () => {
-    if (!id) return undefined;
-    const lst = await db.scores.where({ subject: form.getValues('subject') }).toArray();
-    return ListExams.reduce(
-      (acc, it) => {
-        acc[it] = lst.filter((item) => item.exams === it).length;
-        return acc;
-      },
-      {} as Record<Exams, number>
-    );
-  }, [id]);
+  const [subject] = useWatch({ control: form.control, name: ['subject'] });
+  const min = useLiveQuery(async () => {
+    if (!subject) return {} as Record<Exams, number>;
+    const scores = await db.scores
+      .toCollection()
+      .filter((i) => i.subject === subject && i.semester === semester - 1)
+      .toArray();
+    return Object.fromEntries(
+      Object.keys(Exams).map((k) => [k, scores.filter((i) => i.exams === k).length])
+    ) as Record<Exams, number>;
+  }, [subject, semester]);
 
   const handleAdd = form.handleSubmit(async (data) => {
     await db.targets.put(data);
     toast.success(t('Add target successfully'));
   });
+
   useEffect(() => {
     if (isSubmitSuccessful && open) {
       setOpen(false);
@@ -75,16 +77,40 @@ export default function DialogAdd() {
           <Box
             sx={{ border: 1, borderColor: 'divider', borderRadius: 1, p: 0, position: 'relative' }}
           >
-            <List sx={{ mr: -1 }}>
-              {Object.keys(Exams).map((key) => (
+            <Box pt={2.5} px={1.5}>
+              <Tabs
+                type="button"
+                value={`tab-${semester}`}
+                onChange={(_e, val) => setSemester(Number(val.slice(4)))}
+                sx={{ borderRadius: 1 }}
+              >
+                {[1, 2].map((i) => (
+                  <Tab key={i} value={`tab-${i}`} label={t(`Semester `) + i} />
+                ))}
+              </Tabs>
+            </Box>
+            <List sx={{ mr: -1, display: semester === 1 ? 'block' : 'none' }}>
+              {Object.keys(Exams).map((key, idx) => (
                 <ListItem key={key} value={key}>
                   <ListItemText>{key}</ListItemText>
                   <Controller
                     control={form.control}
-                    name={`exams.${key as Exams}`}
+                    name={`exams.0.${key as Exams}`}
                     render={({ field }) => (
-                      <NumberField min={defaultValue ? defaultValue[key as Exams] : 0} {...field} />
+                      <NumberField min={min?.[key as Exams] ?? 0} disabled={idx !== 0} {...field} />
                     )}
+                  />
+                </ListItem>
+              ))}
+            </List>
+            <List sx={{ mr: -1, display: semester === 2 ? 'block' : 'none' }}>
+              {Object.keys(Exams).map((key, idx) => (
+                <ListItem key={key} value={key}>
+                  <ListItemText>{key}</ListItemText>
+                  <Controller
+                    control={form.control}
+                    name={`exams.1.${key as Exams}`}
+                    render={({ field }) => <NumberField disabled={idx !== 0} {...field} />}
                   />
                 </ListItem>
               ))}
@@ -108,12 +134,7 @@ export default function DialogAdd() {
               control={form.control}
               name="target"
               render={({ field }) => (
-                <Box width={1} display="flex" mt={2}>
-                  <Box>
-                    <ViewScore score={field.value} isColor />
-                  </Box>
-                  <ScoreField sx={{ flex: 1 }} {...field} />
-                </Box>
+                <CircularSliderField value={field.value} onChange={field.onChange} />
               )}
             />
           </Box>

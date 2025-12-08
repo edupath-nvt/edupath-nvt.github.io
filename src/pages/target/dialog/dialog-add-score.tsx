@@ -28,11 +28,9 @@ import { Exams, Subjects } from 'src/mock/default-data';
 
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
-import { ScoreField } from 'src/components/fields/score-field';
 import { LabelBorder } from 'src/components/label/label-border';
-import { ViewScore, getColorScore } from 'src/components/views/view-score';
-
-import { getScoreBySubject } from '../utils/get-score';
+import { getColorScore } from 'src/components/views/view-score';
+import CircularSliderField from 'src/components/fields/slider-score-field';
 
 export const useDialogAddScore = create<DialogProps>((set) => ({
   open: false,
@@ -43,14 +41,20 @@ export const form = createFormControl<Score & { _score: number }>();
 
 export default function DialogAddScore() {
   const { open, setOpen } = useDialogAddScore();
-  const [id, subject, exams, _score] = useWatch({
+  const [id, subject, exams, semester] = useWatch({
     control: form.control,
-    name: ['id', 'subject', 'exams', '_score'],
+    name: ['id', 'subject', 'exams', 'semester'],
   });
-  const { scores, totalScore } = useLiveQuery(
-    () => getScoreBySubject(exams, subject),
-    [exams, subject]
-  ) ?? { scores: [], totalScore: 0 };
+  const [scores, targets] = useLiveQuery(
+    async () => [
+      await db.scores
+        .toCollection()
+        .filter((x) => x.exams === exams && x.subject === subject && x.semester === semester)
+        .sortBy('updatedAt'),
+      subject ? await db.targets.where('subject').equals(subject).first() : ({} as Target),
+    ],
+    [exams, subject, semester]
+  ) ?? [[] as Score[], {} as Target];
 
   const { isLoading, isSubmitSuccessful } = useFormState(form);
 
@@ -67,18 +71,18 @@ export default function DialogAddScore() {
     if (!data.id) delete data.id;
     await db.scores.put({
       ...data,
-      ...(id && { createdAt: now }),
+      ...(!id && { createdAt: now }),
       updatedAt: now,
     });
   });
 
   useEffect(() => {
-    if (scores.length === totalScore && scores.length > 0) {
+    if (scores.length === targets?.exams?.[semester][exams] && scores.length > 0) {
       form.setValue('id', scores[0].id);
     } else {
       form.setValue('id', 0);
     }
-  }, [scores, totalScore]);
+  }, [exams, scores, semester, targets]);
 
   return (
     <Dialog open={open} fullWidth maxWidth="xs">
@@ -107,7 +111,7 @@ export default function DialogAddScore() {
             <Stack flex={1} alignItems="flex-start">
               <Typography variant="h6">{Subject?.name}</Typography>
               <Chip
-                label={`${exams} ${scores.length}/${totalScore}`}
+                label={`${exams} ${scores.length}/${targets?.exams?.[semester][exams]}`}
                 size="small"
                 icon={<Iconify color={Exam?.color} icon={Exam?.icon as any} />}
                 sx={{
@@ -118,7 +122,7 @@ export default function DialogAddScore() {
                 }}
               />
             </Stack>
-            <Chip label={_score?.toFixed(2)} />
+            {/* <Chip label={_score?.toFixed(2)} /> */}
           </Box>
 
           <Box
@@ -137,14 +141,7 @@ export default function DialogAddScore() {
             <Controller
               control={form.control}
               name="score"
-              render={({ field }) => (
-                <Box width={1} display="flex" mt={2}>
-                  <Box>
-                    <ViewScore score={field.value} isColor />
-                  </Box>
-                  <ScoreField sx={{ flex: 1 }} {...field} />
-                </Box>
-              )}
+              render={({ field }) => <CircularSliderField {...field} />}
             />
           </Box>
 
@@ -168,16 +165,18 @@ export default function DialogAddScore() {
                     helperText={scoreSel && fTimeAgo(scoreSel.updatedAt)}
                     {...field}
                   >
-                    <MenuItem value={0}>
-                      <em>{t('New score')}</em>
-                    </MenuItem>
+                    {targets?.exams?.[semester][exams] === scores.length && (
+                      <MenuItem value={0}>
+                        <em>{t('New score')}</em>
+                      </MenuItem>
+                    )}
                     {scores.map((score) => (
                       <MenuItem key={score.id} value={score.id}>
                         <Label sx={{ width: 40, color: getColorScore(score.score) }}>
                           {score.score.toFixed(2)}
                         </Label>
                         <Typography ml={0.5} variant="body2" color="textSecondary">
-                          {dayjs(score.updatedAt).format('DD MMM YYYY')}
+                          {dayjs(score.updatedAt).format('DD MMMM YYYY')}
                         </Typography>
                       </MenuItem>
                     ))}
@@ -193,7 +192,7 @@ export default function DialogAddScore() {
           {t('Close')}
         </Button>
         <Button
-          disabled={totalScore === scores.length && !id}
+          disabled={targets?.exams?.[semester][exams] === scores.length && !id}
           loading={isLoading}
           variant="contained"
           color="primary"

@@ -1,7 +1,7 @@
 type Target = {
     id?: number;
     subject: Subjects;
-    exams: Record<Exams, number>;
+    exams: Record<Exams, number>[];
     target: number;
 }
 
@@ -10,6 +10,7 @@ type Score = {
     subject: Subjects;
     exams: Exams;
     score: number;
+    semester: number;
     createdAt: string;
     updatedAt: string;
 }

@@ -33,7 +33,7 @@ export default function Page() {
     setValue('message', '');
     const data_chat: Message = [...msg, { role: 'user', content: data.message }];
     setMsg(data_chat);
-    await API.chat(data_chat, setMsg);
+    // await API.chat(data_chat, setMsg);
   });
 
   useEffect(() => {

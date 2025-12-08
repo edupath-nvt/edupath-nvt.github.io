@@ -18,6 +18,74 @@ export const percentAchieved = (target: number, actual: number): number => {
     return Math.round(ratio * 100 * 10) / 10; // làm tròn 1 chữ số thập phân
 };
 
+export const getTargetData = async () => {
+    const targets = await db.targets.toArray();
+    const scores = await db.scores.toArray();
+
+    return targets.map((tar) => {
+        const semScores = [0, 1].map((i) =>
+            scores
+                .filter((score) => score.subject === tar.subject && score.semester === i)
+                .reduce(
+                    ([sum, weight], sc) => {
+                        const w = Exams[sc.exams].weight;
+                        return [sum + sc.score * w, weight + w];
+                    },
+                    [0, 0]
+                )
+        );
+        const requiredSemester = [0, 1].map((sem) => {
+            const [currentWeighted] = semScores[sem];
+
+            const target = tar.target; // điểm mục tiêu
+            const examTargets = tar.exams[sem]; // số bài target mỗi exam trong học kỳ
+            const scoresInSem = scores.filter((s) => s.subject === tar.subject && s.semester === sem);
+
+            let totalNeededWeight = 0;
+            let missingWeight = 0;
+
+            // tính xem exam nào còn thiếu
+            Object.entries(examTargets).forEach(([examKey, countTarget]) => {
+                const exam = examKey as Exams;
+                const weight = Exams[exam].weight;
+
+                const doneCount = scoresInSem.filter((s) => s.exams === exam).length;
+                const missingCount = Math.max(0, countTarget - doneCount);
+
+                if (missingCount > 0) {
+                    missingWeight += weight * missingCount;
+                }
+
+                totalNeededWeight += weight * countTarget;
+            });
+
+            if (missingWeight === 0) {
+                return 0;
+            }
+
+            const targetTotal = target * totalNeededWeight;
+
+            const needed = targetTotal - currentWeighted;
+
+            const requiredEach = needed / missingWeight;
+
+            return requiredEach;
+        });
+
+        return {
+            ...tar,
+            scores: semScores,
+            requiredSemester,
+            canSemester:
+                Object.values(tar?.exams[0] || {}).reduce((s, c) => s + c, 0) ===
+                scores.filter((s) => s.subject === tar.subject && s.semester === 0).length,
+        };
+    });
+};
+
+
+export type TargetData = Awaited<ReturnType<typeof getTargetData>>[number];
+
 export const getScore = async () => {
     // === 1. Lấy dữ liệu song song ===
     const [scores, targets] = await Promise.all([db.scores.toArray(), db.targets.toArray()]);
@@ -85,7 +153,7 @@ export const getScore = async () => {
                 return [
                     exam,
                     {
-                        target: tar.exams[exam],
+                        target: tar.exams[0][exam],
                         count,
                         weight: Exams[exam].weight,
                         avg: count > 0 ? avg : 0,
@@ -120,14 +188,3 @@ export const getScore = async () => {
         };
     });
 };
-
-export const getScoreBySubject = async (exams: Exams, subject: Subjects) => {
-    if (!subject || !exams) return { scores: [] as Score[], totalScore: 0 };
-    const scores = await db.scores.where({ subject, exams }).toArray();
-    const totalScore = (await db.targets.where({ subject }).first())?.exams[exams];
-    return { scores, totalScore };
-}
-
-export type getScoreBySubject = Awaited<ReturnType<typeof getScoreBySubject>>
-
-export type TargetValue = Awaited<ReturnType<typeof getScore>>[number];
