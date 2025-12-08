@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback } from 'react';
 
 import { Box, Stack, Button, Avatar, Divider, Typography } from '@mui/material';
 
+import { useDebounce } from 'src/hooks/use-debound';
+
 import { t } from 'src/i18n';
 import { API } from 'src/api/axios';
 import { db } from 'src/database/dexie';
@@ -13,6 +15,7 @@ import { Iconify } from 'src/components/iconify';
 import { CarouselConfig } from 'src/components/carousel/carousel-config';
 
 import { getSubject } from './utils/get-subject';
+import { ChatView } from './components/chat-view';
 import { CardTargetView } from './components/card-target-view';
 import { getTargetData, type TargetData } from './utils/get-score';
 import DialogAdd, { form, useDialogAdd } from './dialog/dialog-add';
@@ -22,6 +25,7 @@ export default function Page() {
   const [targetList, setTargetList] = useState<TargetData[]>();
   const { setOpen, open } = useDialogAdd();
   const [tar, setTar] = useState<TargetData>();
+  const [msg, setMsg] = useState<string>('');
   const { auth } = useAuth();
   const _targets = useLiveQuery(() => db.targets.toArray(), []);
   const { setOpen: setOpenScore, open: openScore } = useDialogAddScore();
@@ -67,11 +71,13 @@ export default function Page() {
     }
   }, [_targets?.length, auth, setOpen]);
 
+  const _tar = useDebounce(tar, 750);
+
   useEffect(() => {
-    if (tar) {
-      API.chat(tar, console.log);
+    if (_tar) {
+      API.chat(_tar, setMsg);
     }
-  }, [tar]);
+  }, [_tar]);
 
   return (
     <>
@@ -163,6 +169,7 @@ export default function Page() {
             );
           }}
         />
+        {msg && <ChatView msg={msg} />}
       </Stack>
 
       <DialogAdd />

@@ -64,7 +64,9 @@ const API = {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem('access_token')}`
       },
-      body: JSON.stringify({ message: `Dựa trên Object ${JSON.stringify(objectPromt)} hãy đánh giá môn học, tôi có thể đạt được mục tiêu không? - làm sao để đạt được mục tiêu, cho tôi lời khuyên` }),
+      body: JSON.stringify({ message: `Dựa trên Object ${JSON.stringify(objectPromt)} hãy đánh giá môn học, tôi có thể đạt được mục tiêu không? - làm sao để đạt được mục tiêu, cho tôi lời khuyên. trả lời tự nhiên không nhắc đến object trong câu trả lời. 
+       - nếu canAchieveTarget là false tức là không thể đạt được mục tiêu, yêu cầu thay đổi mục tiêu.
+      ` }),
     });
     let msg = "";
     const reader = res.body?.getReader();
