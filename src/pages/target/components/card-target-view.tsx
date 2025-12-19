@@ -32,10 +32,12 @@ export function CardTargetView({
   target,
   handleEdit,
   onClickExams,
+  viewDetails,
 }: {
   target: TargetData;
   handleEdit: (id: number) => Promise<void>;
   onClickExams: (subject: Subjects, score: number, exams: Exams, semester: number) => void;
+  viewDetails?: () => void;
 }) {
   const [sem, setSem] = useState(0);
   const subject = Subjects[target.subject];
@@ -116,7 +118,7 @@ export function CardTargetView({
         }
         sx={{ px: 3, pt: 2 }}
       />
-      <Stack pb={5}>
+      <Stack>
         <Box my={1.5}>
           <Tabs
             sx={{
@@ -296,6 +298,11 @@ export function CardTargetView({
               }
             )}
           </Alert>
+        </Box>
+        <Box p={2}>
+          <Button onClick={viewDetails} variant="outlined">
+            {t('View details')}
+          </Button>
         </Box>
       </Stack>
     </Box>

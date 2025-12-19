@@ -58,16 +58,30 @@ const API = {
       canAchieveTarget: !(target.requiredSemester[0] > 10 || target.requiredSemester[1] > 10)
     }
 
+    const prompt = `Dựa trên dữ liệu này:
+      ${JSON.stringify(objectPromt)}
+
+      **Hãy cho tôi biết:**
+      - Tôi có đạt được mục tiêu không?
+      - Cần làm gì để thành công?
+      - Nếu không khả thi, nên đặt mục tiêu mới là gì?
+
+      **Phong cách trả lời:**
+      - Sử dụng ngôn ngữ tự nhiên, dễ hiểu
+      - Không đề cập đến các thuật ngữ kỹ thuật trong dữ liệu
+      - Tập trung vào hành động cụ thể và khả thi
+      - Trả lời tự nhiên như một người bạn tư vấn
+      `;
+
     const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/ai-chat`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem('access_token')}`
       },
-      body: JSON.stringify({ message: `Dựa trên Object ${JSON.stringify(objectPromt)} hãy đánh giá môn học, tôi có thể đạt được mục tiêu không? - làm sao để đạt được mục tiêu, cho tôi lời khuyên. trả lời tự nhiên không nhắc đến object trong câu trả lời. 
-       - nếu canAchieveTarget là false tức là không thể đạt được mục tiêu, yêu cầu thay đổi mục tiêu.
-      ` }),
+      body: JSON.stringify({ message: prompt }),
     });
+
     let msg = "";
     const reader = res.body?.getReader();
     const decoder = new TextDecoder();

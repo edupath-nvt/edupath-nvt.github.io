@@ -3,8 +3,6 @@ import { useState, useEffect, useCallback } from 'react';
 
 import { Box, Stack, Button, Avatar, Divider, Typography } from '@mui/material';
 
-import { useDebounce } from 'src/hooks/use-debound';
-
 import { t } from 'src/i18n';
 import { API } from 'src/api/axios';
 import { db } from 'src/database/dexie';
@@ -24,7 +22,7 @@ import DialogAddScore, { useDialogAddScore, form as formScore } from './dialog/d
 export default function Page() {
   const [targetList, setTargetList] = useState<TargetData[]>();
   const { setOpen, open } = useDialogAdd();
-  const [tar, setTar] = useState<TargetData>();
+  const [idx, setIdx] = useState<number>(-1);
   const [msg, setMsg] = useState<string>('');
   const { auth } = useAuth();
   const _targets = useLiveQuery(() => db.targets.toArray(), []);
@@ -71,14 +69,6 @@ export default function Page() {
     }
   }, [_targets?.length, auth, setOpen]);
 
-  const _tar = useDebounce(tar, 750);
-
-  useEffect(() => {
-    if (_tar) {
-      API.chat(_tar, setMsg);
-    }
-  }, [_tar]);
-
   return (
     <>
       <Stack spacing={2}>
@@ -99,11 +89,18 @@ export default function Page() {
               onClickExams={handleClickExams}
               target={target}
               handleEdit={handleEdit}
+              viewDetails={() => {
+                const _tar = targetList?.[idx];
+                if (_tar) {
+                  API.chat(_tar, setMsg);
+                  setMsg(t('Loading...'));
+                }
+              }}
             />
           )}
-          onChange={(idx) => {
-            setTar(targetList?.[idx]);
-            setMsg('Loading...');
+          onChange={(index) => {
+            setMsg('');
+            setIdx(index);
           }}
           renderThumb={({
             item: { subject, target, scores, canSemester, requiredSemester },
