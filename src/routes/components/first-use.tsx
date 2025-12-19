@@ -127,7 +127,7 @@ export function FirstUse() {
                   variant="outlined"
                   LinkComponent="a"
                   href="/edupath.apk"
-                  download="edupath.apk"
+                  download="edupath_1.0.apk"
                   startIcon={<Iconify icon="flat-color-icons:android-os" />}
                 >
                   {t('Download app android')}
