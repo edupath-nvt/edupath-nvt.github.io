@@ -11,8 +11,6 @@ export type Message = { role: 'user' | 'assistant'; content: string; noServer?: 
 import ReactMarkdown from 'react-markdown';
 import { useForm, Controller } from 'react-hook-form';
 
-import { API } from 'src/api/axios';
-
 import { Row } from 'src/components/views/row';
 import { Center } from 'src/components/views/center';
 
