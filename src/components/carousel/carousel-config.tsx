@@ -137,8 +137,8 @@ export function CarouselConfig<T>({
           </Box>
         )}
       </Box>
-      <Box mx="auto" overflow="hidden" ref={emblaThumbsRef}>
-        <Box display="flex" gap={1} justifyContent="center">
+      <Box style={{ maxWidth: '100%', marginInline: 'auto' }} overflow="hidden" ref={emblaThumbsRef}>
+        <Box display="flex" gap={1}>
           {listSrc.map((slide, index) => (
             <Box
               key={index}

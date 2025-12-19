@@ -59,7 +59,7 @@ export default function Page() {
       getTargetData().then(setTargetList);
     }
   }, [_targets?.length, open, openScore]);
-
+  
   useEffect(() => {
     if (auth && _targets?.length === 0) {
       setOpen(true);
