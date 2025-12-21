@@ -129,7 +129,7 @@ export default function DialogAdd() {
               position: 'relative',
             }}
           >
-            <LabelBorder>{t('Target score')}</LabelBorder>
+            <LabelBorder>{t('Annual target')}</LabelBorder>
             <Controller
               control={form.control}
               name="target"
@@ -146,6 +146,7 @@ export default function DialogAdd() {
             sx={{ mr: 'auto' }}
             onDelete={async () => {
               await db.targets.delete(id);
+              await db.scores.where('subject').equals(subject).delete();
               setOpen(false);
               toast.success(t('Delete target successfully'));
             }}

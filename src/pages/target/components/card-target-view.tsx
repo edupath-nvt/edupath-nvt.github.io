@@ -1,5 +1,5 @@
 import Color from 'color';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 
 import {
@@ -27,6 +27,17 @@ import { Row } from 'src/components/views/row';
 import { Iconify } from 'src/components/iconify';
 
 import type { TargetData } from '../utils/get-score';
+
+const isFinsh = (tar: TargetData, data: Record<Exams, Score[]>, sem: number) => {
+  const k = Object.keys(Exams);
+  let rs = true;
+  k.forEach((key) => {
+    if (tar.exams[sem][key as Exams] === data[key as Exams]?.length) {
+      rs = false;
+    }
+  });
+  return rs;
+};
 
 export function CardTargetView({
   target,
@@ -76,11 +87,16 @@ export function CardTargetView({
     return _sum / Math.max(_length, 1);
   };
   const isNotTarget = target.requiredSemester[sem] > 10;
+
+  const isFinished = useMemo(
+    () => isFinsh(target, data ?? ({} as Record<Exams, Score[]>), sem),
+    [data, sem, target]
+  );
+
   return (
     <Box
       sx={{
         borderRadius: 2,
-        // border: 2,
         bgcolor: isNotTarget ? (th) => th.vars.palette.Alert.errorStandardBg : 'background.paper',
         position: 'relative',
       }}
@@ -137,10 +153,11 @@ export function CardTargetView({
           </Tabs>
         </Box>
         <Box display="flex">
-          {Object.entries(Exams).map(([key, value]) => {
+          {Object.keys(Exams).map((key) => {
             const tar = target.exams[sem][key as Exams];
             const avgScore = avg(key as Exams);
             const percent = ((avgScore / target.target) * 100).toFixed(0);
+
             return (
               <Stack spacing={2} key={key} width={0.3333333} px={1}>
                 <ButtonBase
@@ -205,96 +222,27 @@ export function CardTargetView({
               </Stack>
             );
           })}
-
-          {/* {Object.entries(target.exams).map(([key, value]) => (
-            <Stack spacing={2} key={key} width={0.3333333} px={1}>
-              <ButtonBase
-                onClick={() => onClickExams(key as Exams)}
-                sx={{
-                  display: 'inline-flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  py: 1,
-                  borderRadius: 1,
-                  transition: 'all .2s ease-in-out',
-                  '&:hover': {
-                    bgcolor: 'action.hover',
-                  },
-                }}
-              >
-                <Chip
-                  sx={{
-                    color: Exams[key as Exams].color,
-                    bgcolor: Color(Exams[key as Exams].color)
-                      .alpha(0.08)
-                      .string(),
-                    fontWeight: 'bold',
-                    textWrap: 'wrap',
-                    fontSize: 12,
-                  }}
-                  icon={
-                    <Iconify
-                      color={Exams[key as Exams].color}
-                      icon={Exams[key as Exams].icon as any}
-                    />
-                  }
-                  label={key}
-                />
-                <Badge
-                  overlap="circular"
-                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                  sx={{
-                    '& .MuiBadge-badge': {
-                      boxShadow: (th) => th.vars.customShadows.z8,
-                      bgcolor: (th) => th.vars.palette.background.default,
-                      color: (th) => th.vars.palette.text.primary,
-                      borderColor: 'divider',
-                      borderWidth: 1,
-                    },
-                  }}
-                  badgeContent={`x${value.weight}`}
-                >
-                  <ViewScore
-                    subTitle={`${Math.round(value.percent * 100) / 100}%`}
-                    sx={{ mt: 2 }}
-                    size={60}
-                    score={value.avg}
-                    isColor
-                  />
-                </Badge>
-                <Typography variant="caption" sx={{ opacity: 0.6, my: 1 }}>
-                  {value.count}/{value.target} - ({(value.count / value.target) * 100}%)
-                </Typography>
-                <LinearProgress
-                  sx={{ width: 0.8, borderRadius: 1, height: 6 }}
-                  variant="determinate"
-                  value={(value.count / value.target) * 100}
-                />
-              </ButtonBase>
-              <Button
-                sx={{ alignSelf: 'center' }}
-                size="small"
-                variant="outlined"
-                startIcon={<Iconify icon="solar:calendar-bold" />}
-                LinkComponent={RouterLink}
-                href={`/calendar?exam=${key}&subject=${target.subject}&back=/`}
-              >
-                {t('Schedule')}
-              </Button>
-            </Stack>
-          ))} */}
         </Box>
         <Box p={3} height={150}>
           <Alert
             variant={isNotTarget ? 'outlined' : 'standard'}
-            severity={target.requiredSemester[sem] > target.target ? 'error' : 'success'}
+            severity={
+              target.requiredSemester[sem] > target.target
+                ? 'error'
+                : !isFinished
+                  ? 'info'
+                  : 'success'
+            }
           >
             {t(
               isNotTarget
                 ? 'You can no longer set this target'
-                : 'You only need to score at least {{points}} points on the tests to reach your target.',
+                : isFinished
+                  ? 'You only need to score at least {{points}} points on the tests to reach your target.'
+                  : 'You have completed the {{subject}} subject goal.',
               {
                 points: Math.max(6.5, target.requiredSemester[sem]).toFixed(2),
+                subject: target.subject,
               }
             )}
           </Alert>
