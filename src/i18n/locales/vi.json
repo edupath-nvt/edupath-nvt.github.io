@@ -74,5 +74,7 @@
   "You can no longer set this target": "Bạn không có thể đạt được mục tiêu này.",
   "You only need to score at least {{points}} points on the tests to reach your target.": "Bạn chỉ cần đạt {{points}} điểm cho mỗi bài kiểm tra để đạt được mục tiêu.",
   "Annual target": "Điểm mục tiêu (cả năm)",
-  "You have completed the {{subject}} subject goal.": "Bạn đã hoàn thành mục tiêu môn {{subject}}"
+  "You have completed the {{subject}} subject goal.": "Bạn đã hoàn thành mục tiêu môn {{subject}}",
+  "You were not able to set the goal.": "Bạn không đặt được mục tiêu.",
+  "You have set the subject goal.": "Chúc mừng, bạn đã đặt được mục tiêu môn học"
 }

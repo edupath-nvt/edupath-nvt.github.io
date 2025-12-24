@@ -30,6 +30,8 @@ import { ButtonDelete } from 'src/components/buttons/button-delete';
 import CircularSliderField from 'src/components/fields/slider-score-field';
 
 import { getSubject } from '../utils/get-subject';
+import { getTargetData } from '../utils/get-score';
+import { useListTarget } from '../store/list-target';
 import { SelectSubject } from '../components/select-subject';
 
 export const useDialogAdd = create<DialogProps>((set) => ({
@@ -41,6 +43,7 @@ export const form = createFormControl<Target>();
 
 export default function DialogAdd() {
   const { open, setOpen } = useDialogAdd();
+  const { setTargetList } = useListTarget();
   const { isSubmitSuccessful, isLoading } = useFormState(form);
   const subjectList = useLiveQuery(getSubject) ?? [];
   const [semester, setSemester] = useState(1);
@@ -147,8 +150,10 @@ export default function DialogAdd() {
             onDelete={async () => {
               await db.targets.delete(id);
               await db.scores.where('subject').equals(subject).delete();
-              setOpen(false);
-              toast.success(t('Delete target successfully'));
+              getTargetData().then(res => setTargetList(res)).finally(() => {
+                setOpen(false);
+                toast.success(t('Delete target successfully'));
+              })
             }}
           >
             {t('Delete target')}

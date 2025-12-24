@@ -14,13 +14,14 @@ import { CarouselConfig } from 'src/components/carousel/carousel-config';
 
 import { getSubject } from './utils/get-subject';
 import { ChatView } from './components/chat-view';
+import { getTargetData } from './utils/get-score';
+import { useListTarget } from './store/list-target';
 import { CardTargetView } from './components/card-target-view';
-import { getTargetData, type TargetData } from './utils/get-score';
 import DialogAdd, { form, useDialogAdd } from './dialog/dialog-add';
 import DialogAddScore, { useDialogAddScore, form as formScore } from './dialog/dialog-add-score';
 
 export default function Page() {
-  const [targetList, setTargetList] = useState<TargetData[]>();
+  const { targetList, setTargetList } = useListTarget();
   const { setOpen, open } = useDialogAdd();
   const [idx, setIdx] = useState<number>(-1);
   const [msg, setMsg] = useState<string>('');
@@ -58,8 +59,8 @@ export default function Page() {
     if (!open && !openScore && _targets?.length) {
       getTargetData().then(setTargetList);
     }
-  }, [_targets?.length, open, openScore]);
-  
+  }, [_targets?.length, open, openScore, setTargetList]);
+
   useEffect(() => {
     if (auth && _targets?.length === 0) {
       setOpen(true);
@@ -111,11 +112,14 @@ export default function Page() {
             const hk2 = scores[1][0] / Math.max(1, scores[1][1]);
             const avg = canSemester && scores[1][1] !== 0 ? (hki + hk2 * 2) / 3 : hki;
             const color =
-              requiredSemester[0] > 10 || requiredSemester[1] > 10
+              requiredSemester[0] > 10 ||
+              requiredSemester[1] > 10 ||
+              (avg < target && (requiredSemester[0] < target || requiredSemester[1] < target))
                 ? 'error'
                 : requiredSemester[0] > target && requiredSemester[1] > target
                   ? 'warning'
                   : 'default';
+
             return (
               <Stack
                 alignItems="center"

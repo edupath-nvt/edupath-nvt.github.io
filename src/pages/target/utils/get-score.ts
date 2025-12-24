@@ -60,7 +60,7 @@ export const getTargetData = async () => {
             });
 
             if (missingWeight === 0) {
-                return 0;
+                return -1;
             }
 
             const targetTotal = target * totalNeededWeight;

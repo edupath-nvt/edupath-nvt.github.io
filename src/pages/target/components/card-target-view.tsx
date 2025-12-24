@@ -1,5 +1,5 @@
 import Color from 'color';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 
 import {
@@ -27,17 +27,6 @@ import { Row } from 'src/components/views/row';
 import { Iconify } from 'src/components/iconify';
 
 import type { TargetData } from '../utils/get-score';
-
-const isFinsh = (tar: TargetData, data: Record<Exams, Score[]>, sem: number) => {
-  const k = Object.keys(Exams);
-  let rs = true;
-  k.forEach((key) => {
-    if (tar.exams[sem][key as Exams] === data[key as Exams]?.length) {
-      rs = false;
-    }
-  });
-  return rs;
-};
 
 export function CardTargetView({
   target,
@@ -88,16 +77,16 @@ export function CardTargetView({
   };
   const isNotTarget = target.requiredSemester[sem] > 10;
 
-  const isFinished = useMemo(
-    () => isFinsh(target, data ?? ({} as Record<Exams, Score[]>), sem),
-    [data, sem, target]
-  );
+  console.log({ target });
 
   return (
     <Box
       sx={{
         borderRadius: 2,
-        bgcolor: isNotTarget ? (th) => th.vars.palette.Alert.errorStandardBg : 'background.paper',
+        bgcolor:
+          target.requiredSemester[sem] === -1 && avg() < target.target
+            ? (th) => th.vars.palette.Alert.errorStandardBg
+            : 'background.paper',
         position: 'relative',
       }}
     >
@@ -121,18 +110,20 @@ export function CardTargetView({
           </Row>
         }
         subheader={
-          <Box>
-            {t('Reaching {{perecent}}% of your target.', {
-              perecent: ((avg() / target.target) * 100).toFixed(0),
-            })}
-          </Box>
+          !(avg() >= target.target && target.requiredSemester[sem] === -1) && (
+            <Box>
+              {t('Reaching {{perecent}}% of your target.', {
+                perecent: ((avg() / target.target) * 100).toFixed(0),
+              })}
+            </Box>
+          )
         }
         action={
           <IconButton onClick={() => handleEdit(target.id!)}>
             <Iconify icon="solar:pen-bold" />
           </IconButton>
         }
-        sx={{ px: 3, pt: 2 }}
+        sx={{ px: 3, pt: 2, height: 66 }}
       />
       <Stack>
         <Box my={1.5}>
@@ -225,24 +216,27 @@ export function CardTargetView({
         </Box>
         <Box p={3} height={150}>
           <Alert
-            variant={isNotTarget ? 'outlined' : 'standard'}
+            variant={target.requiredSemester[sem] === -1 ? 'outlined' : 'standard'}
             severity={
-              target.requiredSemester[sem] > target.target
-                ? 'error'
-                : !isFinished
-                  ? 'info'
+              target.requiredSemester[sem] !== -1
+                ? target.requiredSemester[sem] > target.target
+                  ? 'error'
                   : 'success'
+                : avg() >= target.target
+                  ? 'success'
+                  : 'error'
             }
           >
             {t(
-              isNotTarget
-                ? 'You can no longer set this target'
-                : isFinished
-                  ? 'You only need to score at least {{points}} points on the tests to reach your target.'
-                  : 'You have completed the {{subject}} subject goal.',
+              target.requiredSemester[sem] !== -1
+                ? isNotTarget
+                  ? 'You can no longer set this target'
+                  : 'You only need to score at least {{points}} points on the tests to reach your target.'
+                : avg() >= target.target
+                  ? 'You have set the subject goal.'
+                  : 'You were not able to set the goal.',
               {
                 points: Math.max(6.5, target.requiredSemester[sem]).toFixed(2),
-                subject: target.subject,
               }
             )}
           </Alert>
