@@ -102,7 +102,7 @@ export function CardTargetView({
         }
         title={
           <Row>
-            {subject.name + ` (${target.target.toFixed(2)})`}{' '}
+            {subject.name + ` (${target.target.toFixed(1)})`}{' '}
             {avg() >= target.target && (
               <Iconify width={24} icon="eva:checkmark-fill" sx={{ color: 'success.main' }} />
             )}
@@ -192,7 +192,7 @@ export function CardTargetView({
                         icon={Number(percent) >= 100 ? 'eva:checkmark-fill' : 'mingcute:close-line'}
                       />
                     )}
-                    {avgScore.toFixed(2)}
+                    {avgScore.toFixed(1)}
                   </Typography>
                   <Typography variant="caption" sx={{ opacity: 0.6, my: 1 }}>
                     {data?.[key as Exams]?.length ?? 0}/{tar} {t('exams')}
@@ -235,7 +235,7 @@ export function CardTargetView({
                   ? 'You have set the subject goal.'
                   : 'You were not able to set the goal.',
               {
-                points: Math.max(6.5, target.requiredSemester[sem]).toFixed(2),
+                points: Math.max(6.5, target.requiredSemester[sem]).toFixed(1),
               }
             )}
           </Alert>

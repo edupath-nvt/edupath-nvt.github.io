@@ -12,6 +12,7 @@ import { ViewDay } from './components/view-day';
 import { ViewWeek } from './components/view-week';
 import { ViewMonth } from './components/view-month';
 import { form, DialogAddSchedule, useDialogAddSchedule } from './dialog/dialog-add-schedule';
+import { DialogDeleteSchedule, useDialogDeleteSchedule } from './dialog/dialog-delete-schedule';
 
 const objectItem = {
   day: {
@@ -33,6 +34,8 @@ const mode = Object.keys(objectItem) as (keyof typeof objectItem)[];
 export default function Page() {
   const [search, setSearch] = useSearchParams();
   const { setOpen } = useDialogAddSchedule();
+  const { setOpen: setOpenDelete } = useDialogDeleteSchedule();
+
   const [exam, subject] = useMemo(() => [search.get('exam'), search.get('subject')], [search]);
   const modeView = (search.get('modeView') || 'day') as (typeof mode)[number];
   const setModeView = (_modeView: (typeof mode)[number]) => {
@@ -40,6 +43,7 @@ export default function Page() {
     else search.set('modeView', _modeView);
     setSearch(search);
   };
+
   useEffect(() => {
     if (exam && subject) {
       setOpen(true);
@@ -52,20 +56,29 @@ export default function Page() {
   return (
     <>
       <Stack spacing={2}>
-        <Button
-          variant="contained"
-          sx={{ alignSelf: 'flex-end' }}
-          startIcon={<Iconify icon="solar:calendar-add-bold" />}
-          color="primary"
-          onClick={() => {
-            const today = dayjs();
-            form.setValue('day', today.add(1, 'day'));
-            form.setValue('time', today.hour(20).minute(0));
-            setOpen(true);
-          }}
-        >
-          {t('Add schedule')}
-        </Button>
+        <Stack direction="row" spacing={1} sx={{ alignSelf: 'flex-end' }}>
+          <Button
+            variant="outlined"
+            startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
+            color="error"
+            onClick={() => setOpenDelete(true)}
+          >
+            {t('Clear schedule')}
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<Iconify icon="solar:calendar-add-bold" />}
+            color="primary"
+            onClick={() => {
+              const today = dayjs();
+              form.setValue('day', today.add(1, 'day'));
+              form.setValue('time', today.hour(20).minute(0));
+              setOpen(true);
+            }}
+          >
+            {t('Add schedule')}
+          </Button>
+        </Stack>
         <Tabs
           sx={{ borderRadius: 1 }}
           type="button"
@@ -79,6 +92,7 @@ export default function Page() {
         <ViewContent />
       </Stack>
       <DialogAddSchedule />
+      <DialogDeleteSchedule />
     </>
   );
 }

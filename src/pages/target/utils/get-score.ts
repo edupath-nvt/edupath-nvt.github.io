@@ -23,9 +23,13 @@ export const getTargetData = async () => {
     const scores = await db.scores.toArray();
 
     return targets.map((tar) => {
+        const targetScores = scores.filter((s) => s.subject === tar.subject);
+        const canSemester = Object.values(tar?.exams[0] || {}).reduce((s, c) => s + c, 0) ===
+            targetScores.filter((s) => s.semester === 0).length;
+
         const semScores = [0, 1].map((i) =>
-            scores
-                .filter((score) => score.subject === tar.subject && score.semester === i)
+            targetScores
+                .filter((score) => score.semester === i)
                 .reduce(
                     ([sum, weight], sc) => {
                         const w = Exams[sc.exams].weight;
@@ -37,9 +41,15 @@ export const getTargetData = async () => {
         const requiredSemester = [0, 1].map((sem) => {
             const [currentWeighted] = semScores[sem];
 
-            const target = tar.target; // điểm mục tiêu
+            let target = tar.target; // điểm mục tiêu
+
+            if (sem === 1 && canSemester && semScores[0][1] > 0) {
+                const hki = semScores[0][0] / semScores[0][1];
+                target = (tar.target * 3 - hki) / 2;
+            }
+
             const examTargets = tar.exams[sem]; // số bài target mỗi exam trong học kỳ
-            const scoresInSem = scores.filter((s) => s.subject === tar.subject && s.semester === sem);
+            const scoresInSem = targetScores.filter((s) => s.semester === sem);
 
             let totalNeededWeight = 0;
             let missingWeight = 0;
@@ -76,9 +86,7 @@ export const getTargetData = async () => {
             ...tar,
             scores: semScores,
             requiredSemester,
-            canSemester:
-                Object.values(tar?.exams[0] || {}).reduce((s, c) => s + c, 0) ===
-                scores.filter((s) => s.subject === tar.subject && s.semester === 0).length,
+            canSemester,
         };
     });
 };

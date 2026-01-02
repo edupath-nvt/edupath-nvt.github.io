@@ -33,10 +33,11 @@ import { Row } from 'src/components/views/row';
 import { Iconify } from 'src/components/iconify';
 import { dialog } from 'src/components/dialog-confirm/confirm';
 
-import { ViewTabMe } from '../components/view-tab-me';
+import { saveNotification } from '../utils/save-notification';
 import { ViewTabSubject } from '../components/view-tab-subject';
-import { Schedule, saveNotification } from '../utils/save-notification';
-import { checkScheduleConflict, hasOverlappingSchedule } from '../utils/has-overlapping-schedule';
+import { hasOverlappingSchedule } from '../utils/has-overlapping-schedule';
+
+import type { Schedule } from '../utils/save-notification';
 
 export const useDialogAddSchedule = create<DialogProps>((set) => ({
   open: false,
@@ -52,6 +53,7 @@ export const form = createFormControl<
 
 export function DialogAddSchedule() {
   const { open, setOpen } = useDialogAddSchedule();
+  const [isMe, setIsMe] = useState(true)
   const [search, setSearch] = useSearchParams();
   const [show, setShow] = useState<boolean[]>([]);
   const [lst, setLst] = useState<Schedule[]>([]);
@@ -70,25 +72,51 @@ export function DialogAddSchedule() {
   const handleAddSchedule = form.handleSubmit(async (data) => {
     const start = dayjs();
     const end = dayjs(data.day);
-    const days = end.diff(start, 'day') + 1;
-    if (tab === 'subject') {
-      const lstSchedule: Schedule[] = Array.from({ length: days }, (_, i) => ({
-        exam: data.exam,
-        subject: data.subject,
-        timeHandle: start
-          .add(i, 'day')
-          .set('hour', data.time.hour())
-          .set('minute', data.time.minute())
-          .toDate(),
+    const days = end.diff(start, 'day') + 2;
+
+    const lstSchedule: Schedule[] = tab === 'subject' ? Array.from({ length: days }, (_, i) => {
+      const timeHandle = start
+        .add(i, 'day')
+        .set('hour', data.time.hour())
+        .set('minute', data.time.minute())
+        .set('second', 0)
+        .set('millisecond', 0);
+      return {
+        ...!isMe ? {
+          title: data.title,
+          body: data.body,
+        } : {
+          exam: data.exam,
+          subject: data.subject,
+        },
+        timeHandle: timeHandle.toDate(),
+        dateHandle: timeHandle.format('DD MMM YYYY'),
         studyTime: data.studyTime,
         status: 'new',
-        type: 'subject',
-      }));
+        type: isMe ? 'subject' : 'self',
+      };
+    }) : [{
+      ...!isMe ? {
+        title: data.title,
+        body: data.body,
+      } : {
+        exam: data.exam,
+        subject: data.subject,
+      },
+      timeHandle: data.day.hour(data.time.hour()).minute(data.time.minute()).second(0).millisecond(0).toDate(),
+      dateHandle: data.day.format('DD MMM YYYY'),
+      studyTime: data.studyTime,
+      status: 'new',
+      type: isMe ? 'subject' : 'self',
+    }];
 
-      if (lstSchedule.length > 0 && dayjs(lstSchedule[0].timeHandle).isBefore(dayjs())) {
-        lstSchedule.shift();
-      }
 
+    if (lstSchedule.length === 0) {
+      toast.warning(t('No valid schedules to add'));
+      return;
+    }
+
+    try {
       const hasConflict = await hasOverlappingSchedule(lstSchedule);
       if (hasConflict.filter(Boolean).length > 0) {
         setLst(lstSchedule);
@@ -97,16 +125,8 @@ export function DialogAddSchedule() {
         return;
       }
 
-      dialog.confirm(
-        t(
-          'Do you really want to add {{length}} study schedules every day at {{time}} for the {{subject}} subject?',
-          {
-            length: lstSchedule.length,
-            time: data.time.format('HH:mm'),
-            subject: data.subject,
-          }
-        ),
-        async () => {
+      const onSave = async () => {
+        try {
           const keys = await db.schedules.bulkAdd(lstSchedule, {
             allKeys: true,
           });
@@ -114,64 +134,70 @@ export function DialogAddSchedule() {
           setOpen(false);
           if (back) router.push(back);
           toast.success(t('Add schedule successfully'));
+        } catch (error) {
+          console.error(error);
+          toast.error(t('Failed to add schedule'));
         }
-      );
-    }
-    if (tab === 'me') {
-      const timeHanlde = data.day
-        .set('hour', data.time.hour())
-        .set('minute', data.time.minute())
-        .toDate();
+      };
 
-      const hasConflict = await checkScheduleConflict(timeHanlde, data.studyTime);
-      if (hasConflict) {
-        toast.error(t('There is a schedule conflict with existing study time.'));
-        return;
+      if (lstSchedule.length === 1) {
+        await onSave();
+      } else {
+        dialog.confirm(
+          t('Do you really want to add {{length}} {{type}} schedules every day at {{time}}?', {
+            length: lstSchedule.length,
+            time: data.time.format('HH:mm'),
+            type: isMe ? t('study') : t('personal'),
+          }),
+          onSave
+        );
       }
-
-      const id = await db.schedules.add({
-        title: data.title!,
-        body: data.body || '',
-        timeHandle: timeHanlde,
-        studyTime: data.studyTime,
-        status: 'new',
-        type: 'self',
-      });
-      await Schedule({
-        title: data.title!,
-        body: data.body || '',
-        at: dayjs(timeHanlde),
-        id,
-      });
-      setOpen(false);
-      if (back) router.push(back);
-      toast.success(t('Add schedule successfully'));
+    } catch (error) {
+      console.error(error);
+      toast.error(t('An error occurred while checking for conflicts'));
     }
   });
 
-  const handleAdd = form.handleSubmit(async (data) => {
+  useEffect(() => {
+    if (isMe) {
+      form.setValue('title', '');
+      form.setValue('body', '');
+    } else {
+      form.setValue('exam', undefined);
+      form.setValue('subject', undefined);
+    }
+  }, [isMe]);
+
+  const handleAdd = async () => {
     const lstSchedule = lst.filter((_, i) => !show[i]);
+    if (lstSchedule.length === 0) {
+      toast.warning(t('No schedules selected to add'));
+      return;
+    }
+
     dialog.confirm(
-      t(
-        'Do you really want to add {{length}} study schedules every day at {{time}} for the {{subject}} subject?',
-        {
-          length: lstSchedule.length,
-          time: data.time.format('HH:mm'),
-          subject: data.subject,
-        }
-      ),
+      t('Do you really want to add {{length}} {{type}} schedules every day at {{time}}?', {
+        length: lstSchedule.length,
+        time: form.getValues('time').format('HH:mm'),
+        type: isMe ? t('study') : t('personal'),
+      }),
       async () => {
-        const keys = await db.schedules.bulkAdd(lstSchedule, {
-          allKeys: true,
-        });
-        await saveNotification(lstSchedule.map((s, i) => ({ ...s, id: keys[i] })));
-        setOpen(false);
-        setShow([]);
-        if (back) router.push(back);
-        toast.success(t('Add schedule successfully'));
+        try {
+          const keys = await db.schedules.bulkAdd(lstSchedule, {
+            allKeys: true,
+          });
+          await saveNotification(lstSchedule.map((s, i) => ({ ...s, id: keys[i] })));
+          setOpen(false);
+          setShow([]);
+          if (back) router.push(back);
+          toast.success(t('Add schedule successfully'));
+        } catch (error) {
+          console.error(error);
+          toast.error(t('Failed to add schedule'));
+        }
       }
     );
-  });
+  };
 
   useEffect(() => {
     if (!open) {
@@ -207,14 +233,13 @@ export function DialogAddSchedule() {
               />
             </Tabs>
           )}
-          {tab === 'subject' && <ViewTabSubject control={form.control} />}
-          {tab === 'me' && <ViewTabMe control={form.control} />}
+          <ViewTabSubject tab={tab} isMe={isMe} setIsMe={setIsMe} control={form.control} />
         </DialogContent>
         <DialogActions>
           <Button
             disabled={isLoading}
             onClick={() => {
-              if(back) router.replace(back);
+              if (back) router.replace(back);
               setOpen(false);
             }}
           >
@@ -239,25 +264,25 @@ export function DialogAddSchedule() {
               <Row gap={2} mb={2}>
                 <Avatar
                   sx={{
-                    bgcolor: Subjects[lst[0].subject!].color,
-                    color: (th) => th.palette.getContrastText(Subjects[lst[0].subject!].color),
+                    bgcolor: Subjects[lst[0].subject!]?.color,
+                    color: Subjects[lst[0].subject!]?.color ? (th) => th.palette.getContrastText(Subjects[lst[0].subject!]?.color) : 'inherit',
                   }}
                 >
-                  <Iconify icon={Subjects[lst[0].subject!].icon as any} />
+                  <Iconify icon={Subjects[lst[0].subject!]?.icon as any} />
                 </Avatar>
                 <Stack>
-                  <Typography variant="h6">{Subjects[lst[0].subject!].name}</Typography>
+                  <Typography variant="h6">{Subjects[lst[0].subject!]?.name}</Typography>
                   <Chip
                     size="small"
-                    icon={<Iconify color="inherit" icon={Exams[lst[0].exam!].icon as any} />}
+                    icon={<Iconify color="inherit" icon={Exams[lst[0].exam!]?.icon as any} />}
                     label={lst[0].exam!}
                     sx={{
                       width: 1,
                       justifyContent: 'flex-start',
-                      color: Exams[lst[0].exam!].color,
-                      bgcolor: Color(Exams[lst[0].exam!].color).alpha(0.08).toString(),
+                      color: Exams[lst[0].exam!]?.color,
+                      bgcolor: Color(Exams[lst[0].exam!]?.color).alpha(0.08).toString(),
                       border: 1,
-                      borderColor: Color(Exams[lst[0].exam!].color).alpha(0.16).toString(),
+                      borderColor: Color(Exams[lst[0].exam!]?.color).alpha(0.16).toString(),
                     }}
                   />
                 </Stack>

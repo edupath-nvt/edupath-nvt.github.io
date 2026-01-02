@@ -23,11 +23,12 @@ import { Exams, Subjects } from 'src/mock/default-data';
 import { Row } from 'src/components/views/row';
 import { Iconify } from 'src/components/iconify';
 import { Center } from 'src/components/views/center';
+import { dialog } from 'src/components/dialog-confirm/confirm';
 import { NoData } from 'src/components/grid-view/components/not-data';
 
-import { saveNotification } from '../utils/save-notification';
 import { useDialogAddSchedule } from '../dialog/dialog-add-schedule';
 import { getTodayStudyProgress } from '../utils/get-today-study-progress';
+import { saveNotification, cancelNotification } from '../utils/save-notification';
 
 export function ViewDay() {
   const [today, setToday] = useState(dayjs());
@@ -144,7 +145,7 @@ function ViewSchedule({
           <Avatar
             sx={{
               bgcolor: Subjects[s.subject!].color,
-              color: (th) => th.palette.getContrastText(Subjects[s.subject!].color),
+              color: Subjects[s.subject!].color ? (th) => th.palette.getContrastText(Subjects[s.subject!].color) : 'inherit',
             }}
           >
             <Iconify icon={Subjects[s.subject!].icon as any} />
@@ -153,17 +154,17 @@ function ViewSchedule({
             <Typography noWrap variant="h6" maxWidth={1}>
               {Subjects[s.subject!].name}
             </Typography>
-            <Chip
+            {Exams[s.exam!] && <Chip
               size="small"
               label={s.exam}
               sx={{
-                color: Exams[s.exam!].color,
-                bgcolor: Color(Exams[s.exam!].color).alpha(0.08).hexa(),
+                color: Exams[s.exam!]?.color,
+                bgcolor: Exams[s.exam!]?.color ? Color(Exams[s.exam!].color).alpha(0.08).hexa() : 'inherit',
                 border: 1,
-                borderColor: Color(Exams[s.exam!].color).alpha(0.16).hexa(),
+                borderColor: Exams[s.exam!]?.color ? Color(Exams[s.exam!].color).alpha(0.16).hexa() : 'inherit',
               }}
-              icon={<Iconify width={16} color="inherit" icon={Exams[s.exam!].icon as any} />}
-            />
+              icon={<Iconify width={16} color="inherit" icon={Exams[s.exam!]?.icon as any} />}
+            />}
           </Stack>
           {['new', 'canceled'].includes(s.status) && dayjs(s.timeHandle).isAfter(today) && (
             <IconButton
@@ -172,9 +173,7 @@ function ViewSchedule({
                   .update(s.id!, { status: s.status === 'new' ? 'canceled' : 'new' })
                   .then(async () => {
                     if (s.status === 'new') {
-                      await LocalNotifications.cancel({
-                        notifications: [{ id: s.id! }],
-                      });
+                      await cancelNotification(s.id!);
                     } else {
                       await saveNotification([s]);
                     }
@@ -212,6 +211,21 @@ function ViewSchedule({
               <Iconify icon="solar:bell-bing-bold-duotone" />
             </IconButton>
           )}
+          <IconButton
+            onClick={() => {
+              dialog.confirm(t('Do you really want to delete this schedule?'), async () => {
+                await cancelNotification(s.id!);
+                await db.schedules.delete(s.id!);
+                setSchedules((pre) => pre.filter((i) => i.id !== s.id));
+              });
+            }}
+            sx={{
+              alignSelf: 'center',
+              color: 'error.main',
+            }}
+          >
+            <Iconify icon="solar:trash-bin-trash-bold" />
+          </IconButton>
           {s.status === 'new' && isActive && (
             <>
               <Typography variant="caption" color="textSecondary">
@@ -252,7 +266,14 @@ function ViewSchedule({
             position: 'relative',
           }}
         >
-          <Avatar />
+          <Avatar
+            sx={{
+              bgcolor: 'primary.main',
+              color: (th) => th.palette.getContrastText(th.palette.primary.main),
+            }}
+          >
+            <Iconify icon="solar:user-bold-duotone" />
+          </Avatar>
           <Stack flex={1} alignItems="start" overflow="hidden">
             <Typography noWrap variant="h6" maxWidth={1}>
               {s.title}
@@ -270,9 +291,7 @@ function ViewSchedule({
                   .update(s.id!, { status: s.status === 'new' ? 'canceled' : 'new' })
                   .then(async () => {
                     if (s.status === 'new') {
-                      await LocalNotifications.cancel({
-                        notifications: [{ id: s.id! }],
-                      });
+                      await cancelNotification(s.id!);
                     } else {
                       await saveNotification([s]);
                     }
@@ -310,6 +329,21 @@ function ViewSchedule({
               <Iconify icon="solar:bell-bing-bold-duotone" />
             </IconButton>
           )}
+          <IconButton
+            onClick={() => {
+              dialog.confirm(t('Do you really want to delete this schedule?'), async () => {
+                await cancelNotification(s.id!);
+                await db.schedules.delete(s.id!);
+                setSchedules((pre) => pre.filter((i) => i.id !== s.id));
+              });
+            }}
+            sx={{
+              alignSelf: 'center',
+              color: 'error.main',
+            }}
+          >
+            <Iconify icon="solar:trash-bin-trash-bold" />
+          </IconButton>
           {s.status === 'new' && isActive && (
             <>
               <Typography variant="caption" color="textSecondary">

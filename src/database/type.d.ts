@@ -22,6 +22,7 @@ type Schedule = {
     exam?: Exams;
     status: 'canceled' | 'new';
     timeHandle: Date;
+    dateHandle: string;
     studyTime: number;
     startCheck?: Date;
 

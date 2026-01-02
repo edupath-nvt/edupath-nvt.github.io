@@ -23,13 +23,13 @@ export async function saveNotification(lst: Schedule[]) {
                 ? t("Your personal activity starts at {{time}} ({{hours}} hours)", {
                     time: dayjs(s.timeHandle).format("HH:mm, dddd"),
                     hours: s.studyTime,
-                  })
+                })
                 : t("Start studying {{subject}} ({{exam}}) at {{time}} ({{hours}} hours)", {
                     subject: s.subject,
                     exam: s.exam,
                     time: dayjs(s.timeHandle).format("HH:mm, dddd"),
                     hours: s.studyTime,
-                  });
+                });
 
             return {
                 title,
@@ -95,4 +95,13 @@ export async function Schedule(props: {
             },
         }]
     });
+}
+
+export async function cancelNotification(id: number) {
+    const platform = Capacitor.getPlatform();
+    if (["android", "ios", "web"].includes(platform)) {
+        await LocalNotifications.cancel({
+            notifications: [{ id }],
+        });
+    }
 }

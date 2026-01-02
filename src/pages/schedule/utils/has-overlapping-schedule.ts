@@ -23,7 +23,7 @@ export async function hasOverlappingSchedule(newSchedules: Schedule[]): Promise<
     const results: boolean[] = [];
 
     for (const newSch of newSchedules) {
-        if (newSch.type !== 'subject' || newSch.studyTime == null) {
+        if (newSch.studyTime == null) {
             results.push(false);
             continue;
         }
@@ -33,7 +33,7 @@ export async function hasOverlappingSchedule(newSchedules: Schedule[]): Promise<
 
         let hasOverlap = false;
         for (const oldSch of existingSchedules) {
-            if (oldSch.type !== 'subject' || oldSch.studyTime == null) continue;
+            if (oldSch.id === newSch.id || oldSch.studyTime == null) continue;
 
             const oldStart = oldSch.timeHandle;
             const oldEnd = getEndTime(oldStart, oldSch.studyTime);

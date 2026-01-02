@@ -25,8 +25,10 @@ import { Exams, Subjects } from 'src/mock/default-data';
 
 import { Iconify } from 'src/components/iconify';
 import { Center } from 'src/components/views/center';
+import { dialog } from 'src/components/dialog-confirm/confirm';
 import { NoData } from 'src/components/grid-view/components/not-data';
 
+import { cancelNotification } from '../utils/save-notification';
 import { getTodayStudyProgress } from '../utils/get-today-study-progress';
 import { form, useDialogAddSchedule } from '../dialog/dialog-add-schedule';
 
@@ -63,12 +65,14 @@ function GetScheduleInTime({
   today,
   hour,
   schedules,
+  setSchedules,
 }: {
   d: number;
   start: dayjs.Dayjs;
   today: dayjs.Dayjs;
   hour: number;
   schedules: Schedule[];
+  setSchedules: React.Dispatch<React.SetStateAction<Schedule[]>>;
 }) {
   const now = start.add(d === 0 ? 6 : d - 1, 'day');
   const [open, setOpen] = useState(false);
@@ -85,12 +89,12 @@ function GetScheduleInTime({
     return dayjs(s.timeHandle).isSame(now, 'day') && startTime >= hour && startTime < hour + 1;
   });
 
-  const Subject = schedule?.subject && Subjects[schedule.subject];
-  if (!Subject)
+  const s = schedule;
+  if (!s)
     return (
       <Box
         onClick={() => {
-          if(today.isAfter(now.hour(hour))) return
+          if (today.isAfter(now.hour(hour))) return;
           form.setValue('day', now);
           form.setValue('time', now.hour(hour).minute(0));
           setOpenAddSchedule(true);
@@ -98,8 +102,9 @@ function GetScheduleInTime({
         sx={{ height: heightWeekCell, zIndex: 24 - hour }}
       />
     );
-  const Exam = schedule?.exam && Exams[schedule.exam];
-  const s = schedule!;
+
+  const Subject = s.subject ? Subjects[s.subject] : null;
+  const Exam = s.exam ? Exams[s.exam] : null;
 
   const isActive =
     dayjs(s.timeHandle).isBefore(today) &&
@@ -119,13 +124,21 @@ function GetScheduleInTime({
           title={
             <Table size="small" padding="none">
               <TableRow>
-                <TableCell sx={{ color: 'text.secondary', pr: 1 }}>{t('Subject')}</TableCell>
-                <TableCell>{Subject.name}</TableCell>
+                <TableCell sx={{ color: 'text.secondary', pr: 1 }}>{t(s.type === 'subject' ? 'Subject' : 'Title')}</TableCell>
+                <TableCell>{Subject?.name || s.title}</TableCell>
               </TableRow>
-              <TableRow>
-                <TableCell sx={{ color: 'text.secondary', pr: 1 }}>{t('Exam')}</TableCell>
-                <TableCell>{s.exam}</TableCell>
-              </TableRow>
+              {s.type === 'subject' && (
+                <TableRow>
+                  <TableCell sx={{ color: 'text.secondary', pr: 1 }}>{t('Exam')}</TableCell>
+                  <TableCell>{s.exam}</TableCell>
+                </TableRow>
+              )}
+              {s.type === 'self' && s.body && (
+                <TableRow>
+                  <TableCell sx={{ color: 'text.secondary', pr: 1 }}>{t('Body')}</TableCell>
+                  <TableCell>{s.body}</TableCell>
+                </TableRow>
+              )}
               <TableRow>
                 <TableCell sx={{ color: 'text.secondary', pr: 1 }}>{t('Time start')}</TableCell>
                 <TableCell>{dayjs(s.timeHandle).format('HH:mm')}</TableCell>
@@ -134,6 +147,30 @@ function GetScheduleInTime({
                 <TableCell sx={{ color: 'text.secondary', pr: 1 }}>{t('Study time')}</TableCell>
                 <TableCell>
                   {s.studyTime} {t('hour(s)')}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell colSpan={2} align="center" padding="normal">
+                  <Button
+                    fullWidth
+                    size="small"
+                    color="error"
+                    variant="contained"
+                    startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleTooltipClose();
+                      setTimeout(() => {
+                        dialog.confirm(t('Do you really want to delete this schedule?'), async () => {
+                          await cancelNotification(s.id!);
+                          await db.schedules.delete(s.id!);
+                          setSchedules((pre) => pre.filter((i) => i.id !== s.id));
+                        });
+                      }, 100);
+                    }}
+                  >
+                    {t('Delete schedule')}
+                  </Button>
                 </TableCell>
               </TableRow>
             </Table>
@@ -148,11 +185,6 @@ function GetScheduleInTime({
           disableFocusListener
           disableHoverListener
           disableTouchListener
-          slotProps={{
-            popper: {
-              disablePortal: true,
-            },
-          }}
         >
           <Box
             sx={{
@@ -166,8 +198,8 @@ function GetScheduleInTime({
               handleTooltipOpen();
             }}
           >
-            {schedule && Subject && (
-              <Box sx={{ weight: 1, height: schedule.studyTime * heightWeekCell, py: 1, px: 0.5 }}>
+            {s && (
+              <Box sx={{ width: 1, height: s.studyTime * heightWeekCell, py: 1, px: 0.5 }}>
                 <Box
                   sx={{
                     display: 'flex',
@@ -217,35 +249,39 @@ function GetScheduleInTime({
                     </>
                   )}
                   <Typography display="block" variant="caption" noWrap maxWidth="100%">
-                    {s.subject}
+                    {Subject?.name || s.title}
                   </Typography>
                   <Badge
                     overlap="circular"
                     anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                     badgeContent={
-                      <Center
-                        sx={{
-                          bgcolor: Exam?.color,
-                          color: (th) => th.palette.getContrastText(Exam?.color || ''),
-                          width: 18,
-                          height: 18,
-                          borderRadius: '50%',
-                          boxShadow: (th) => th.customShadows.z4,
-                        }}
-                      >
-                        <Iconify width={0.7} icon={Exam?.icon as any} />
-                      </Center>
+                      s.type === 'subject' ? (
+                        <Center
+                          sx={{
+                            bgcolor: Exam?.color,
+                            color: Exam?.color
+                              ? (th) => th.palette.getContrastText(Exam?.color || '')
+                              : 'inherit',
+                            width: 18,
+                            height: 18,
+                            borderRadius: '50%',
+                            boxShadow: (th) => th.customShadows.z4,
+                          }}
+                        >
+                          <Iconify width={0.7} icon={Exam?.icon as any} />
+                        </Center>
+                      ) : null
                     }
                   >
                     <Avatar
                       sx={{
                         width: 32,
                         height: 32,
-                        bgcolor: Subject.color,
-                        color: (th) => th.palette.getContrastText(Subject.color),
+                        bgcolor: Subject?.color || 'primary.main',
+                        color: (th) => th.palette.getContrastText(Subject?.color || th.palette.primary.main),
                       }}
                     >
-                      <Iconify width={0.55} icon={Subject.icon as any} />
+                      <Iconify width={0.55} icon={(Subject?.icon || 'solar:user-bold-duotone') as any} />
                     </Avatar>
                   </Badge>
                   {isActive && (
@@ -265,7 +301,7 @@ function GetScheduleInTime({
 
 export function ViewWeek() {
   const [day, setDay] = useState(dayjs());
-  const [{ start, end }, setRange] = useState<{ start: Dayjs; end: Dayjs }>({
+  const [{ start, end }, setRange] = useState<{ start: dayjs.Dayjs; end: dayjs.Dayjs }>({
     start: dayjs().startOf('week'),
     end: dayjs().endOf('week'),
   });
@@ -396,6 +432,7 @@ export function ViewWeek() {
                     start={start}
                     today={today}
                     schedules={schedules}
+                    setSchedules={setSchedules}
                   />
                 </TableCell>
               ))}

@@ -23,16 +23,18 @@ import { Iconify } from 'src/components/iconify';
 export function SelectSubject({
   control,
   subjectList = [],
+  require = true,
 }: {
   control: Control<any>;
   subjectList: Subjects[];
+  require?: boolean;
 }) {
   return (
     <Controller
       control={control}
       name="subject"
       rules={{
-        required: t("Subject can't be empty"),
+        required: require ? t("Subject can't be empty") : false,
       }}
       render={({ field, fieldState: { error } }) => (
         <Autocomplete

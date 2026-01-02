@@ -12,7 +12,7 @@ export class EduPathDB extends Dexie {
         this.version(1).stores({
             targets: "++id, subject",
             scores: "++id, subject, exams, createdAt",
-            schedules: "++id, subject, exam, timeHandle, dateHandle, startCheck, endCheck, status",
+            schedules: "++id, subject, exam, timeHandle, dateHandle, startCheck, endCheck, status, [timeHandle+dateHandle]",
         });
     }
 }
