@@ -95,8 +95,9 @@ export const NumberField = forwardRef<HTMLDivElement, NumberFieldProps>(
               {...props}
               ref={ref}
               value={number}
-              onChange={(e) => {
-                setNumber(e.target.value);
+              onChange={(e) => setNumber(e.target.value)}
+              onBlur={() => {
+                setNumber(e => +e)
                 flagChange.current = true;
               }}
               type="number"
