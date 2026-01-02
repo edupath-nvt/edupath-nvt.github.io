@@ -95,7 +95,10 @@ export const NumberField = forwardRef<HTMLDivElement, NumberFieldProps>(
               {...props}
               ref={ref}
               value={number}
-              onChange={(e) => setNumber(e.target.value)}
+              onChange={(e) => {
+                setNumber(e.target.value);
+                flagChange.current = true;
+              }}
               type="number"
               sx={{
                 '& input': {
