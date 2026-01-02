@@ -96,10 +96,6 @@ export const NumberField = forwardRef<HTMLDivElement, NumberFieldProps>(
               ref={ref}
               value={number}
               onChange={(e) => setNumber(e.target.value)}
-              onBlur={() => {
-                setNumber((e) => Math.min(max, Math.max(min, Math.round(Number(e) / step) * step)));
-                flagChange.current = true;
-              }}
               type="number"
               sx={{
                 '& input': {

@@ -63,7 +63,8 @@ export function CardTargetView({
         },
         [0, 0]
       );
-      return d[0] / Math.max(d[1], 1);
+
+      return Math.round((d[0] / Math.max(d[1], 1)) * 10) / 10;
     }
     const [_sum, _length] = (data?.[key] ?? []).reduce(
       ([acc, sum], i) => {
@@ -73,11 +74,9 @@ export function CardTargetView({
       },
       [0, 0]
     );
-    return _sum / Math.max(_length, 1);
+    return Math.round((_sum / Math.max(_length, 1)) * 10) / 10;
   };
   const isNotTarget = target.requiredSemester[sem] > 10;
-
-  console.log({ target });
 
   return (
     <Box

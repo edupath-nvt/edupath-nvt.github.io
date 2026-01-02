@@ -108,9 +108,9 @@ export default function Page() {
             selected,
           }) => {
             const Subject = Subjects[subject];
-            const hki = scores[0][0] / Math.max(1, scores[0][1]);
-            const hk2 = scores[1][0] / Math.max(1, scores[1][1]);
-            const avg = canSemester && scores[1][1] !== 0 ? (hki + hk2 * 2) / 3 : hki;
+            const hki = Math.round((scores[0][0] / Math.max(1, scores[0][1])) * 10) / 10;
+            const hk2 = Math.round((scores[1][0] / Math.max(1, scores[1][1])) * 10) / 10;
+            const avg = Math.round((canSemester && scores[1][1] !== 0 ? (hki + hk2 * 2) / 3 : hki) * 10) / 10;
             const color =
               requiredSemester[0] > 10 ||
               requiredSemester[1] > 10 ||
@@ -166,7 +166,7 @@ export default function Page() {
                 >
                   <Divider />
                   <Box textAlign="center">
-                    {avg.toFixed(2)}/{target.toFixed(2)}
+                    {avg.toFixed(1)}/{target.toFixed(1)}
                   </Box>
                 </Typography>
               </Stack>

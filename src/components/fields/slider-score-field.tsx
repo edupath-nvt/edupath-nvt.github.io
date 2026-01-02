@@ -57,7 +57,7 @@ export default function CircularSliderField({
           startAngle={200}
           endAngle={340}
           angleType={{ direction: 'cw', axis: '+x' }}
-          handle1={{ value, onChange: (v) => onChange(Math.floor(v * 4) / 4) }}
+          handle1={{ value, onChange: (v) => onChange(Number(Math.floor(v * 4).toFixed(0)) / 4) }}
           arcColor={th.vars.palette.primary.main}
         />
       )}
